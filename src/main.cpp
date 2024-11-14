@@ -2,6 +2,8 @@
 
 #include "raylib.h"
 #include "raymath.h"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
 
 //==============================> Macros
 
