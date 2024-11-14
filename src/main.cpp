@@ -52,11 +52,17 @@ int main()
         virtualMouse.x = (mouse.x - (GetScreenWidth() - (juegoAncho * juegoEscala)) * 0.5f) / juegoEscala;
         virtualMouse.y = (mouse.y - (GetScreenHeight() - (juegoAlto * juegoEscala)) * 0.5f) / juegoEscala;
         virtualMouse = Vector2Clamp(virtualMouse, (Vector2){0, 0}, (Vector2){(float)juegoAncho, (float)juegoAlto});
+        SetMouseOffset(-(GetScreenWidth() - (juegoAncho * juegoEscala)) * 0.5f, -(GetScreenHeight() - (juegoAlto * juegoEscala)) * 0.5f);
+		SetMouseScale(1 / juegoEscala, 1 / juegoEscala);
 
         //===============> Renderización
 
         BeginTextureMode(juegoRenderTextura);
-        ClearBackground(RAYWHITE);
+        ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+        if (GuiButton((Rectangle){10, 10, 100, 40}, "#191#¡Hola, mundo!"))
+        {
+            TraceLog(LOG_INFO, "¡Hola, mundo!");
+        }
         DrawText("¡Hola, mundo!", 30, 30, 40, BLACK);
         DrawRectangle(juegoAncho - 40, juegoAlto - 40, 40, 40, RED);
         EndTextureMode();
