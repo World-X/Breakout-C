@@ -1,6 +1,7 @@
 //==============================> Librerías
 
 #include "raylib.h"
+#include "raymath.h"
 
 //==============================> Macros
 
@@ -42,7 +43,13 @@ int main()
             ventanaAlto = GetScreenHeight();
         }
 
-        float escala = MIN((float)ventanaAncho / juegoAncho, (float)ventanaAlto / juegoAlto);
+        float juegoEscala = MIN((float)ventanaAncho / juegoAncho, (float)ventanaAlto / juegoAlto);
+
+        Vector2 mouse = GetMousePosition();
+        Vector2 virtualMouse = {0};
+        virtualMouse.x = (mouse.x - (GetScreenWidth() - (juegoAncho * juegoEscala)) * 0.5f) / juegoEscala;
+        virtualMouse.y = (mouse.y - (GetScreenHeight() - (juegoAlto * juegoEscala)) * 0.5f) / juegoEscala;
+        virtualMouse = Vector2Clamp(virtualMouse, (Vector2){0, 0}, (Vector2){(float)juegoAncho, (float)juegoAlto});
 
         //===============> Renderización
 
@@ -56,7 +63,7 @@ int main()
 
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawTexturePro(juegoRenderTextura.texture, (Rectangle){0, 0, juegoAncho, -juegoAlto}, (Rectangle){(ventanaAncho - juegoAncho * escala) / 2, (ventanaAlto - juegoAlto * escala) / 2, juegoAncho * escala, juegoAlto * escala}, (Vector2){0, 0}, 0, WHITE);
+        DrawTexturePro(juegoRenderTextura.texture, (Rectangle){0, 0, juegoAncho, -juegoAlto}, (Rectangle){(ventanaAncho - juegoAncho * juegoEscala) / 2, (ventanaAlto - juegoAlto * juegoEscala) / 2, juegoAncho * juegoEscala, juegoAlto * juegoEscala}, (Vector2){0, 0}, 0, WHITE);
         EndDrawing();
     }
 
