@@ -9,7 +9,6 @@ int main()
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawText("¡Hola, mundo!", 30, 30, 40, BLACK);
-        DrawText("Esquina inferior derecha.", GetScreenWidth() - 300, GetScreenHeight() - 30, 20, RED);
         EndDrawing();
     }
     CloseWindow();
