@@ -14,24 +14,56 @@
 
 int juegoAncho = 1920;
 int juegoAlto = 1080;
+int mitadJuegoAncho = juegoAncho / 2;
+int mitadJuegoAlto = juegoAlto / 2;
 
 //==============================> Función principal
 
 int main()
 {
-    //===============> Inicialización
+    //===============> Inicialización de ventana y configuración de raylib
 
-    SetTraceLogLevel(LOG_NONE);
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    SetTraceLogLevel(TraceLogLevel::LOG_TRACE);
+    SetConfigFlags(ConfigFlags::FLAG_WINDOW_RESIZABLE | ConfigFlags::FLAG_VSYNC_HINT);
     int ventanaAncho = 1280;
     int ventanaAlto = 720;
-    InitWindow(ventanaAncho, ventanaAlto, "Breakout");
+    const char *juegoTitulo = "Breakout";
+    InitWindow(ventanaAncho, ventanaAlto, juegoTitulo);
     SetTargetFPS(60);
 
-    //===============> Variables
+    //===============> Inicialización de GUI
+
+    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_SIZE, 50);
+    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_SPACING, 4);
+
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::TEXT_COLOR_NORMAL, ColorToInt(RAYWHITE));
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BASE_COLOR_NORMAL, ColorToInt(DARKGRAY));
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BORDER_COLOR_NORMAL, ColorToInt(RAYWHITE));
+
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::TEXT_COLOR_FOCUSED, ColorToInt(RAYWHITE));
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BASE_COLOR_FOCUSED, ColorToInt(GRAY));
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BORDER_COLOR_FOCUSED, ColorToInt(RAYWHITE));
+
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::TEXT_COLOR_PRESSED, ColorToInt(DARKGRAY));
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BASE_COLOR_PRESSED, ColorToInt(LIGHTGRAY));
+    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BORDER_COLOR_PRESSED, ColorToInt(DARKGRAY));
+
+    GuiSetIconScale(3);
+
+    //===============> Variables locales a la función principal
+
+    Color defaultBackgroundColor = (Color){24, 24, 24, 255};
 
     RenderTexture2D juegoRenderTextura = LoadRenderTexture(juegoAncho, juegoAlto);
-    SetTextureFilter(juegoRenderTextura.texture, TEXTURE_FILTER_BILINEAR);
+    SetTextureFilter(juegoRenderTextura.texture, TextureFilter::TEXTURE_FILTER_BILINEAR);
+
+    int anchoBotonMenuPrincipal = 420;
+    int altoBotonMenuPrincipal = 100;
+    int posicionYBotonMenuPrincipal = 480;
+    int margenBotonMenuPrincipal = 120;
+    Rectangle botonJugarRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
+    Rectangle botonLeaderboardRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal + margenBotonMenuPrincipal, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
+    Rectangle botonSalirRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal + margenBotonMenuPrincipal * 2, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
 
     //===============> Ciclo principal
 
@@ -48,30 +80,38 @@ int main()
         float juegoEscala = MIN((float)ventanaAncho / juegoAncho, (float)ventanaAlto / juegoAlto);
 
         Vector2 mouse = GetMousePosition();
-        Vector2 virtualMouse = {0};
-        virtualMouse.x = (mouse.x - (GetScreenWidth() - (juegoAncho * juegoEscala)) * 0.5f) / juegoEscala;
-        virtualMouse.y = (mouse.y - (GetScreenHeight() - (juegoAlto * juegoEscala)) * 0.5f) / juegoEscala;
-        virtualMouse = Vector2Clamp(virtualMouse, (Vector2){0, 0}, (Vector2){(float)juegoAncho, (float)juegoAlto});
-        SetMouseOffset(-(GetScreenWidth() - (juegoAncho * juegoEscala)) * 0.5f, -(GetScreenHeight() - (juegoAlto * juegoEscala)) * 0.5f);
-		SetMouseScale(1 / juegoEscala, 1 / juegoEscala);
+        Vector2 mouseVirtual = {0};
+        mouseVirtual.x = (mouse.x - (ventanaAncho - (juegoAncho * juegoEscala)) * 0.5f) / juegoEscala;
+        mouseVirtual.y = (mouse.y - (ventanaAlto - (juegoAlto * juegoEscala)) * 0.5f) / juegoEscala;
+        mouseVirtual = Vector2Clamp(mouseVirtual, (Vector2){0, 0}, (Vector2){(float)juegoAncho, (float)juegoAlto});
+        SetMouseOffset(-(ventanaAncho - (juegoAncho * juegoEscala)) * 0.5f, -(ventanaAlto - (juegoAlto * juegoEscala)) * 0.5f);
+        SetMouseScale(1 / juegoEscala, 1 / juegoEscala);
 
         //===============> Renderización
 
         BeginTextureMode(juegoRenderTextura);
-        ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-        if (GuiButton((Rectangle){10, 10, 100, 40}, "#191#¡Hola, mundo!"))
+        ClearBackground(defaultBackgroundColor);
+        //// GuiDrawText(juegoTitulo, (Rectangle){mitadJuegoAncho, 50, juegoTituloLongitud, 60}, GuiTextAlignment::TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiControlProperty::TEXT_COLOR_NORMAL)));
+        DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 120, 160, WHITE);
+        if (GuiButton(botonJugarRect, "Jugar"))
         {
-            TraceLog(LOG_INFO, "¡Hola, mundo!");
+            TraceLog(LOG_INFO, "JUGAR");
         }
-        DrawText("¡Hola, mundo!", 30, 30, 40, BLACK);
-        DrawRectangle(juegoAncho - 40, juegoAlto - 40, 40, 40, RED);
+        if (GuiButton(botonLeaderboardRect, "Leaderboard"))
+        {
+            TraceLog(LOG_INFO, "LEADERBOARD");
+        }
+        if (GuiButton(botonSalirRect, "Salir"))
+        {
+            TraceLog(LOG_INFO, "SALIR");
+        }
         EndTextureMode();
 
         //===============> Dibujo
 
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawTexturePro(juegoRenderTextura.texture, (Rectangle){0, 0, juegoAncho, -juegoAlto}, (Rectangle){(ventanaAncho - juegoAncho * juegoEscala) / 2, (ventanaAlto - juegoAlto * juegoEscala) / 2, juegoAncho * juegoEscala, juegoAlto * juegoEscala}, (Vector2){0, 0}, 0, WHITE);
+        DrawTexturePro(juegoRenderTextura.texture, (Rectangle){0, 0, (float)juegoAncho, (float)-juegoAlto}, (Rectangle){(ventanaAncho - juegoAncho * juegoEscala) / 2, (ventanaAlto - juegoAlto * juegoEscala) / 2, juegoAncho * juegoEscala, juegoAlto * juegoEscala}, (Vector2){0, 0}, 0, WHITE);
         EndDrawing();
     }
 
