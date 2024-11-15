@@ -61,13 +61,34 @@ int main()
 
     int anchoBotonMenuPrincipal = 420;
     int altoBotonMenuPrincipal = 100;
-    int posicionYBotonMenuPrincipal = 480;
+    int posicionYBotonMenuPrincipal = 600;
     int margenBotonMenuPrincipal = 120;
     Rectangle botonJugarRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
     Rectangle botonLeaderboardRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal + margenBotonMenuPrincipal, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
     Rectangle botonSalirRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal + margenBotonMenuPrincipal * 2, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
 
-    Pelota pelotaMenuPrincipal = Pelota((Vector2){mitadJuegoAncho, mitadJuegoAlto}, (Vector2){360.0f, 360.0f}, 20.0f, (Color){200, 200, 200, 255});
+    Pelota pelotaMenuPrincipal = Pelota((Vector2){mitadJuegoAncho, mitadJuegoAlto}, (Vector2){(float)GetRandomValue(300, 420), (float)GetRandomValue(300, 420)}, 20.0f, (Color){200, 200, 200, 255});
+
+    if (GetRandomValue(0, 1) == 0)
+    {
+        pelotaMenuPrincipal.velocidad.x *= -1.0f;
+    }
+
+    CPUPaleta cpuPaletaMenuPrincipal = CPUPaleta((Vector2){mitadJuegoAncho, juegoAlto - 60.0f}, (Vector2){200.0f, 20.0f}, 420.0f, 4, 2.0f, (Color){186, 225, 255, 255});
+
+    Color ladrillosColores[5] = {(Color){255, 0, 0, 255}, (Color){255, 165, 0, 255}, (Color){255, 255, 0, 255}, (Color){0, 128, 0, 255}, (Color){0, 0, 255, 255}};
+
+    Ladrillo ladrillosMenuPrincipal[5][10];
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 10; j++)
+        {
+            float separacion = 10.0f;
+            Vector2 tamaño = (Vector2){(juegoAncho - separacion * 11) / 10, 40.0f};
+            Vector2 posicion = (Vector2){j * (tamaño.x + separacion) + separacion, i * (tamaño.y + separacion) + separacion};
+            ladrillosMenuPrincipal[i][j] = Ladrillo(posicion, tamaño, 0.5f, 4, ladrillosColores[i], true, 10 * (5 - i));
+        }
+    }
 
     //===============> Ciclo principal
 
@@ -96,14 +117,47 @@ int main()
         //===============> Lógica
 
         pelotaMenuPrincipal.Actualizar();
+        cpuPaletaMenuPrincipal.Actualizar(pelotaMenuPrincipal.posicion);
+
+        if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipal.ObtenerRectangulo()))
+        {
+            pelotaMenuPrincipal.velocidad.y *= -1.0f;
+            pelotaMenuPrincipal.posicion.y += pelotaMenuPrincipal.velocidad.y * GetFrameTime();
+        }
+
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                if (ladrillosMenuPrincipal[i][j].activo)
+                {
+                    if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, ladrillosMenuPrincipal[i][j].ObtenerRectangulo()))
+                    {
+                        ladrillosMenuPrincipal[i][j].activo = false;
+                        pelotaMenuPrincipal.velocidad.y *= -1.0f;
+                        pelotaMenuPrincipal.posicion.y += pelotaMenuPrincipal.velocidad.y * GetFrameTime();
+                    }
+                }
+            }
+        }
 
         //===============> Renderización
 
         BeginTextureMode(juegoRenderTextura);
         ClearBackground(defaultBackgroundColor);
-        //// GuiDrawText(juegoTitulo, (Rectangle){mitadJuegoAncho, 50, juegoTituloLongitud, 60}, GuiTextAlignment::TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiControlProperty::TEXT_COLOR_NORMAL)));
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                if (ladrillosMenuPrincipal[i][j].activo)
+                {
+                    ladrillosMenuPrincipal[i][j].Dibujar();
+                }
+            }
+        }
         pelotaMenuPrincipal.Dibujar();
-        DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 120, 160, WHITE);
+        cpuPaletaMenuPrincipal.Dibujar();
+        DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 340, 160, WHITE);
         if (GuiButton(botonJugarRect, "Jugar"))
         {
             TraceLog(LOG_INFO, "JUGAR");
@@ -123,7 +177,7 @@ int main()
         BeginDrawing();
         ClearBackground(BLACK);
         DrawTexturePro(juegoRenderTextura.texture, (Rectangle){0, 0, (float)juegoAncho, (float)-juegoAlto}, (Rectangle){(ventanaAncho - juegoAncho * juegoEscala) / 2, (ventanaAlto - juegoAlto * juegoEscala) / 2, juegoAncho * juegoEscala, juegoAlto * juegoEscala}, (Vector2){0, 0}, 0, WHITE);
-        DrawFPS(10, 10);
+        DrawFPS(10, ventanaAlto - 30);
         EndDrawing();
     }
 
