@@ -30,6 +30,7 @@ int main()
     const char *juegoTitulo = "Breakout";
     InitWindow(ventanaAncho, ventanaAlto, juegoTitulo);
     SetTargetFPS(60);
+    SetExitKey(KEY_NULL);
 
     //===============> Inicialización de GUI
 
@@ -103,7 +104,7 @@ int main()
         }
         if (GuiButton(botonSalirRect, "Salir"))
         {
-            TraceLog(LOG_INFO, "SALIR");
+            break;
         }
         EndTextureMode();
 
