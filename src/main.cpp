@@ -4,6 +4,7 @@
 #include "raymath.h"
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
+#include "breakout.h"
 
 //==============================> Macros
 
@@ -66,19 +67,23 @@ int main()
     Rectangle botonLeaderboardRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal + margenBotonMenuPrincipal, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
     Rectangle botonSalirRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal + margenBotonMenuPrincipal * 2, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
 
+    Pelota pelotaMenuPrincipal = Pelota((Vector2){mitadJuegoAncho, mitadJuegoAlto}, (Vector2){360.0f, 360.0f}, 20.0f, (Color){200, 200, 200, 255});
+
     //===============> Ciclo principal
 
     while (!WindowShouldClose())
     {
-        //===============> Lógica
+        //===============> Actualización de ventana
 
-        if (IsWindowResized)
+        if (IsWindowResized())
         {
             ventanaAncho = GetScreenWidth();
             ventanaAlto = GetScreenHeight();
         }
 
         float juegoEscala = MIN((float)ventanaAncho / juegoAncho, (float)ventanaAlto / juegoAlto);
+
+        //===============> Mouse virtual
 
         Vector2 mouse = GetMousePosition();
         Vector2 mouseVirtual = {0};
@@ -88,11 +93,16 @@ int main()
         SetMouseOffset(-(ventanaAncho - (juegoAncho * juegoEscala)) * 0.5f, -(ventanaAlto - (juegoAlto * juegoEscala)) * 0.5f);
         SetMouseScale(1 / juegoEscala, 1 / juegoEscala);
 
+        //===============> Lógica
+
+        pelotaMenuPrincipal.Actualizar();
+
         //===============> Renderización
 
         BeginTextureMode(juegoRenderTextura);
         ClearBackground(defaultBackgroundColor);
         //// GuiDrawText(juegoTitulo, (Rectangle){mitadJuegoAncho, 50, juegoTituloLongitud, 60}, GuiTextAlignment::TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiControlProperty::TEXT_COLOR_NORMAL)));
+        pelotaMenuPrincipal.Dibujar();
         DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 120, 160, WHITE);
         if (GuiButton(botonJugarRect, "Jugar"))
         {
@@ -113,6 +123,7 @@ int main()
         BeginDrawing();
         ClearBackground(BLACK);
         DrawTexturePro(juegoRenderTextura.texture, (Rectangle){0, 0, (float)juegoAncho, (float)-juegoAlto}, (Rectangle){(ventanaAncho - juegoAncho * juegoEscala) / 2, (ventanaAlto - juegoAlto * juegoEscala) / 2, juegoAncho * juegoEscala, juegoAlto * juegoEscala}, (Vector2){0, 0}, 0, WHITE);
+        DrawFPS(10, 10);
         EndDrawing();
     }
 
