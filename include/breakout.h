@@ -15,6 +15,7 @@ public:
 
     Pelota(void);
     Pelota(Vector2 _posicion, Vector2 _velocidad, float _radio, Color _color);
+    void AcabaDeColisionar(bool _horizontal);
     void Actualizar();
     void Dibujar();
 };
@@ -57,9 +58,24 @@ public:
     Color color;
     bool activo;
     int puntos;
-    
+
     Ladrillo(void);
     Ladrillo(Vector2 _posicion, Vector2 _tamaño, float _redondez, int _segmentos, Color _color, bool _activo, int _puntos);
+    Rectangle ObtenerRectangulo();
+    void Dibujar();
+};
+
+class Obstaculo
+{
+public:
+    Vector2 posicion;
+    Vector2 tamaño;
+    Color color_principal;
+    Color color_contorno;
+    float grosor;
+
+    Obstaculo(void);
+    Obstaculo(Vector2 _posicion, Vector2 _tamaño, Color _color_principal, Color _color_contorno, float _grosor);
     Rectangle ObtenerRectangulo();
     void Dibujar();
 };

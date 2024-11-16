@@ -66,7 +66,7 @@ int main()
 
     //===============> Variables locales a la función principal
 
-    const Color defaultBackgroundColor = (Color){24, 24, 24, 255};
+    const Color defaultBackgroundColor = (Color){0x18, 0x18, 0x18, 0xFF};
 
     RenderTexture2D juegoRenderTextura = LoadRenderTexture(juegoAncho, juegoAlto);
     SetTextureFilter(juegoRenderTextura.texture, TextureFilter::TEXTURE_FILTER_BILINEAR);
@@ -79,16 +79,17 @@ int main()
     const Rectangle botonLeaderboardRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal + margenBotonMenuPrincipal, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
     const Rectangle botonSalirRect = {mitadJuegoAncho - anchoBotonMenuPrincipal / 2, posicionYBotonMenuPrincipal + margenBotonMenuPrincipal * 2, anchoBotonMenuPrincipal, altoBotonMenuPrincipal};
 
-    Pelota pelotaMenuPrincipal = Pelota((Vector2){mitadJuegoAncho, mitadJuegoAlto}, (Vector2){(float)GetRandomValue(300, 420), (float)GetRandomValue(300, 420)}, 20.0f, (Color){200, 200, 200, 255});
+    Pelota pelotaMenuPrincipal = Pelota((Vector2){mitadJuegoAncho, mitadJuegoAlto}, (Vector2){(float)GetRandomValue(300, 420), (float)GetRandomValue(300, 420)}, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF});
 
     if (GetRandomValue(0, 1) == 0)
     {
         pelotaMenuPrincipal.velocidad.x *= -1.0f;
     }
 
-    CPUPaleta cpuPaletaMenuPrincipal = CPUPaleta((Vector2){mitadJuegoAncho, juegoAlto - 60.0f}, (Vector2){200.0f, 20.0f}, 420.0f, 4, 2.0f, (Color){186, 225, 255, 255});
+    CPUPaleta cpuPaletaMenuPrincipal = CPUPaleta((Vector2){mitadJuegoAncho, juegoAlto - 60.0f}, (Vector2){200.0f, 20.0f}, 420.0f, 4, 2.0f, (Color){186, 0xFF, 0xFF, 0xFF});
+    CPUPaleta cpuPaletaMenuPrincipalEnemigo = CPUPaleta((Vector2){mitadJuegoAncho, 300.0f}, (Vector2){100.0f, 20.0f}, 210.0f, 4, 2.0f, (Color){0xFF, 186, 186, 0xFF});
 
-    Color ladrillosColores[MENU_PRINCIPAL_LADRILLOS_FILAS] = {(Color){255, 0, 0, 255}, (Color){255, 165, 0, 255}, (Color){255, 255, 0, 255}, (Color){0, 128, 0, 255}, (Color){0, 0, 255, 255}};
+    Color ladrillosColores[MENU_PRINCIPAL_LADRILLOS_FILAS] = {(Color){0xFF, 0x00, 0x00, 0xFF}, (Color){0xFF, 0xA5, 0x00, 0xFF}, (Color){0xFF, 0xFF, 0x00, 0xFF}, (Color){0x00, 0x7F, 0x00, 0xFF}, (Color){0x00, 0x00, 0xFF, 0xFF}};
     const float ladrillosSeparacion = 8.0f;
     Ladrillo ladrillosMenuPrincipal[MENU_PRINCIPAL_LADRILLOS_FILAS][MENU_PRINCIPAL_LADRILLOS_COLUMNAS];
     for (int fila = 0; fila < MENU_PRINCIPAL_LADRILLOS_FILAS; fila++)
@@ -100,6 +101,14 @@ int main()
             ladrillosMenuPrincipal[fila][columna] = Ladrillo(posicion, tamaño, 0.5f, 4, ladrillosColores[fila], true, 100 * (MENU_PRINCIPAL_LADRILLOS_FILAS - fila));
         }
     }
+
+    const Vector2 obstaculoTamaño = {96.0f, 96.0f};
+    Obstaculo obstaculoMenuPrincipal[5];
+    obstaculoMenuPrincipal[0] = Obstaculo((Vector2){306.0f, 720.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[1] = Obstaculo((Vector2){574.0f, 524.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[2] = Obstaculo((Vector2){1254.0f, 852.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[3] = Obstaculo((Vector2){173.0f, 389.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[4] = Obstaculo((Vector2){1599.0f, 591.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
 
     //===============> Ciclo principal
 
@@ -132,13 +141,18 @@ int main()
 
         pelotaMenuPrincipal.Actualizar();
         cpuPaletaMenuPrincipal.Actualizar(pelotaMenuPrincipal.posicion);
+        cpuPaletaMenuPrincipalEnemigo.Actualizar(pelotaMenuPrincipal.posicion);
 
         //===============> Colisiones
 
         if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipal.ObtenerRectangulo()))
         {
-            pelotaMenuPrincipal.velocidad.y *= -1.0f;
-            pelotaMenuPrincipal.posicion.y += pelotaMenuPrincipal.velocidad.y * GetFrameTime();
+            pelotaMenuPrincipal.AcabaDeColisionar(pelotaMenuPrincipal.posicion.x < cpuPaletaMenuPrincipal.posicion.x || pelotaMenuPrincipal.posicion.x > cpuPaletaMenuPrincipal.posicion.x + cpuPaletaMenuPrincipal.tamaño.x);
+        }
+
+        if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipalEnemigo.ObtenerRectangulo()))
+        {
+            pelotaMenuPrincipal.AcabaDeColisionar(pelotaMenuPrincipal.posicion.x < cpuPaletaMenuPrincipalEnemigo.posicion.x || pelotaMenuPrincipal.posicion.x > cpuPaletaMenuPrincipalEnemigo.posicion.x + cpuPaletaMenuPrincipalEnemigo.tamaño.x);
         }
 
         for (int i = 0; i < MENU_PRINCIPAL_LADRILLOS_FILAS; i++)
@@ -150,10 +164,17 @@ int main()
                     if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, ladrillosMenuPrincipal[i][j].ObtenerRectangulo()))
                     {
                         ladrillosMenuPrincipal[i][j].activo = false;
-                        pelotaMenuPrincipal.velocidad.y *= -1.0f;
-                        pelotaMenuPrincipal.posicion.y += pelotaMenuPrincipal.velocidad.y * GetFrameTime();
+                        pelotaMenuPrincipal.AcabaDeColisionar(pelotaMenuPrincipal.posicion.x < ladrillosMenuPrincipal[i][j].posicion.x || pelotaMenuPrincipal.posicion.x > ladrillosMenuPrincipal[i][j].posicion.x + ladrillosMenuPrincipal[i][j].tamaño.x);
                     }
                 }
+            }
+        }
+
+        for (int i = 0; i < 5; i++)
+        {
+            if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, obstaculoMenuPrincipal[i].ObtenerRectangulo()))
+            {
+                pelotaMenuPrincipal.AcabaDeColisionar(pelotaMenuPrincipal.posicion.x < obstaculoMenuPrincipal[i].posicion.x || pelotaMenuPrincipal.posicion.x > obstaculoMenuPrincipal[i].posicion.x + obstaculoMenuPrincipal[i].tamaño.x);
             }
         }
 
@@ -162,6 +183,8 @@ int main()
         BeginTextureMode(juegoRenderTextura);
 
         ClearBackground(defaultBackgroundColor);
+
+        DrawRectangleGradientV(0, 0, juegoAncho, juegoAlto, (Color){0xFF, 0xFF, 0xFF, 0x0F}, (Color){0x00, 0x00, 0x00, 0x0F});
 
         for (int i = 0; i < MENU_PRINCIPAL_LADRILLOS_FILAS; i++)
         {
@@ -176,6 +199,12 @@ int main()
 
         pelotaMenuPrincipal.Dibujar();
         cpuPaletaMenuPrincipal.Dibujar();
+        cpuPaletaMenuPrincipalEnemigo.Dibujar();
+
+        for (int i = 0; i < 5; i++)
+        {
+            obstaculoMenuPrincipal[i].Dibujar();
+        }
 
         DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 340, 160, WHITE);
 
@@ -200,6 +229,7 @@ int main()
         ClearBackground(BLACK);
         DrawTexturePro(juegoRenderTextura.texture, (Rectangle){0, 0, (float)juegoAncho, (float)-juegoAlto}, (Rectangle){(ventanaAncho - juegoAncho * juegoEscala) / 2, (ventanaAlto - juegoAlto * juegoEscala) / 2, juegoAncho * juegoEscala, juegoAlto * juegoEscala}, (Vector2){0, 0}, 0, WHITE);
         DrawFPS(10, ventanaAlto - 30);
+        DrawText(TextFormat("Mouse: (%.0f, %.0f)", mouseVirtual.x, mouseVirtual.y), 10, 10, 20, WHITE);
         EndDrawing();
     }
 

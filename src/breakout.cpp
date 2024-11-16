@@ -35,6 +35,20 @@ Pelota::Pelota(Vector2 _posicion, Vector2 _velocidad, float _radio, Color _color
     color = _color;
 }
 
+void Pelota::AcabaDeColisionar(bool _horizontal)
+{
+    if (_horizontal)
+    {
+        velocidad.x *= -1.0f;
+        posicion.x += velocidad.x * GetFrameTime();
+    }
+    else
+    {
+        velocidad.y *= -1.0f;
+        posicion.y += velocidad.y * GetFrameTime();
+    }
+}
+
 void Pelota::Actualizar()
 {
     posicion.x += velocidad.x * GetFrameTime();
@@ -171,4 +185,35 @@ void Ladrillo::Dibujar()
     {
         DrawRectangleRounded((Rectangle){posicion.x, posicion.y, tamaño.x, tamaño.y}, redondez, segmentos, color);
     }
+}
+
+//===============> Obstaculo
+
+Obstaculo::Obstaculo(void)
+{
+    posicion = {0};
+    tamaño = {0};
+    color_principal = {0};
+    color_contorno = {0};
+    grosor = 0.0f;
+}
+
+Obstaculo::Obstaculo(Vector2 _posicion, Vector2 _tamaño, Color _color_principal, Color _color_contorno, float _grosor)
+{
+    posicion = _posicion;
+    tamaño = _tamaño;
+    color_principal = _color_principal;
+    color_contorno = _color_contorno;
+    grosor = _grosor;
+}
+
+Rectangle Obstaculo::ObtenerRectangulo()
+{
+    return (Rectangle){posicion.x, posicion.y, tamaño.x, tamaño.y};
+}
+
+void Obstaculo::Dibujar()
+{
+    DrawRectangle(posicion.x, posicion.y, tamaño.x, tamaño.y, color_principal);
+    DrawRectangleLinesEx((Rectangle){posicion.x, posicion.y, tamaño.x, tamaño.y}, grosor, color_contorno);
 }
