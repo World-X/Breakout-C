@@ -4,6 +4,7 @@
 #include "raymath.h"
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
+#include "resource_dir.h"
 #include "breakout.h"
 
 //==============================> Macros
@@ -18,6 +19,14 @@
 #define MENU_PRINCIPAL_LADRILLOS_FILAS 5
 #define MENU_PRINCIPAL_LADRILLOS_COLUMNAS 10
 
+//==============================> Enumeraciones
+
+typedef enum
+{
+    ESCENA_MENU_PRINCIPAL = 0,
+    ESCENA_JUEGO
+} Escena;
+
 //==============================> Variables globales
 
 //===============> Tamaño del juego
@@ -27,10 +36,19 @@ int juegoAlto = 1080;
 int mitadJuegoAncho = juegoAncho / 2;
 int mitadJuegoAlto = juegoAlto / 2;
 
+Escena escenaActual = ESCENA_MENU_PRINCIPAL;
+
+//==============================> Prototipos de funciones
+
+void CicloMenuPrincipal();
+void CicloJuego();
+
 //==============================> Función principal
 
 int main()
 {
+    SearchAndSetResourceDir("resources");
+
     //===============> Inicialización de ventana
 
     SetConfigFlags(ConfigFlags::FLAG_WINDOW_RESIZABLE | ConfigFlags::FLAG_VSYNC_HINT);
@@ -39,6 +57,12 @@ int main()
     const char *juegoTitulo = "Breakout";
     InitWindow(ventanaAncho, ventanaAlto, juegoTitulo);
     SetTargetFPS(60);
+
+    //===============> Inicialización de audio
+
+    InitAudioDevice();
+    SetMasterVolume(0.3f);
+    Sound colisionWav = LoadSound("colision.wav");
 
     //===============> Configuración de raylib
 
@@ -87,28 +111,29 @@ int main()
     }
 
     CPUPaleta cpuPaletaMenuPrincipal = CPUPaleta((Vector2){mitadJuegoAncho, juegoAlto - 60.0f}, (Vector2){200.0f, 20.0f}, 420.0f, 4, 2.0f, (Color){186, 0xFF, 0xFF, 0xFF});
-    CPUPaleta cpuPaletaMenuPrincipalEnemigo = CPUPaleta((Vector2){mitadJuegoAncho, 300.0f}, (Vector2){100.0f, 20.0f}, 210.0f, 4, 2.0f, (Color){0xFF, 186, 186, 0xFF});
+    CPUPaleta cpuPaletaMenuPrincipalEnemigo = CPUPaleta((Vector2){mitadJuegoAncho, 260.0f}, (Vector2){100.0f, 20.0f}, 210.0f, 4, 2.0f, (Color){0xFF, 186, 186, 0xFF});
 
     Color ladrillosColores[MENU_PRINCIPAL_LADRILLOS_FILAS] = {(Color){0xFF, 0x00, 0x00, 0xFF}, (Color){0xFF, 0xA5, 0x00, 0xFF}, (Color){0xFF, 0xFF, 0x00, 0xFF}, (Color){0x00, 0x7F, 0x00, 0xFF}, (Color){0x00, 0x00, 0xFF, 0xFF}};
-    const float ladrillosSeparacion = 8.0f;
+    const float ladrillosSeparacion = 12.0f;
     Ladrillo ladrillosMenuPrincipal[MENU_PRINCIPAL_LADRILLOS_FILAS][MENU_PRINCIPAL_LADRILLOS_COLUMNAS];
     for (int fila = 0; fila < MENU_PRINCIPAL_LADRILLOS_FILAS; fila++)
     {
         for (int columna = 0; columna < MENU_PRINCIPAL_LADRILLOS_COLUMNAS; columna++)
         {
-            Vector2 tamaño = (Vector2){(juegoAncho - ladrillosSeparacion * (MENU_PRINCIPAL_LADRILLOS_COLUMNAS + 1)) / MENU_PRINCIPAL_LADRILLOS_COLUMNAS, 40.0f};
+            Vector2 tamaño = (Vector2){(juegoAncho - ladrillosSeparacion * (MENU_PRINCIPAL_LADRILLOS_COLUMNAS + 1)) / MENU_PRINCIPAL_LADRILLOS_COLUMNAS, 30.0f};
             Vector2 posicion = (Vector2){columna * (tamaño.x + ladrillosSeparacion) + ladrillosSeparacion, fila * (tamaño.y + ladrillosSeparacion) + ladrillosSeparacion};
             ladrillosMenuPrincipal[fila][columna] = Ladrillo(posicion, tamaño, 0.5f, 4, ladrillosColores[fila], true, 100 * (MENU_PRINCIPAL_LADRILLOS_FILAS - fila));
         }
     }
 
     const Vector2 obstaculoTamaño = {96.0f, 96.0f};
-    Obstaculo obstaculoMenuPrincipal[5];
-    obstaculoMenuPrincipal[0] = Obstaculo((Vector2){306.0f, 720.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[1] = Obstaculo((Vector2){574.0f, 524.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[2] = Obstaculo((Vector2){1254.0f, 852.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[3] = Obstaculo((Vector2){173.0f, 389.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[4] = Obstaculo((Vector2){1599.0f, 591.0f}, obstaculoTamaño, BLACK, WHITE, 2.0f);
+    Obstaculo obstaculoMenuPrincipal[6];
+    obstaculoMenuPrincipal[0] = Obstaculo((Vector2){306.0f, 720.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[1] = Obstaculo((Vector2){574.0f, 524.0f}, (Vector2){128.0f, 64.0f}, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[2] = Obstaculo((Vector2){1254.0f, 852.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[3] = Obstaculo((Vector2){173.0f, 389.0f}, (Vector2){64.0f, 64.0f}, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[4] = Obstaculo((Vector2){1599.0f, 591.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[5] = Obstaculo((Vector2){1329.0f, 564.0f}, (Vector2){64.0f, 128.0f}, BLACK, WHITE, 2.0f);
 
     //===============> Ciclo principal
 
@@ -143,38 +168,67 @@ int main()
         cpuPaletaMenuPrincipal.Actualizar(pelotaMenuPrincipal.posicion);
         cpuPaletaMenuPrincipalEnemigo.Actualizar(pelotaMenuPrincipal.posicion);
 
+        if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN))
+        {
+            pelotaMenuPrincipal.velocidad.y *= -1.0f;
+        }
+        else if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT))
+        {
+            pelotaMenuPrincipal.velocidad.x *= -1.0f;
+        }
+        else if (IsKeyPressed(KEY_MINUS))
+        {
+            pelotaMenuPrincipal.velocidad = Vector2Scale(pelotaMenuPrincipal.velocidad, 0.5f);
+        }
+        else if (IsKeyPressed(KEY_EQUAL))
+        {
+            pelotaMenuPrincipal.velocidad = Vector2Scale(pelotaMenuPrincipal.velocidad, 2.0f);
+        }
         //===============> Colisiones
 
-        if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipal.ObtenerRectangulo()))
+        Vector2 pelotaMenuPrincipalVirtualPosicion = {pelotaMenuPrincipal.posicion.x + pelotaMenuPrincipal.velocidad.x * GetFrameTime(), pelotaMenuPrincipal.posicion.y + pelotaMenuPrincipal.velocidad.y * GetFrameTime()};
+
+        // Colisión de la pelota con la paleta del jugador
+        if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipal.ObtenerRectangulo()))
         {
-            pelotaMenuPrincipal.AcabaDeColisionar(pelotaMenuPrincipal.posicion.x < cpuPaletaMenuPrincipal.posicion.x || pelotaMenuPrincipal.posicion.x > cpuPaletaMenuPrincipal.posicion.x + cpuPaletaMenuPrincipal.tamaño.x);
+            pelotaMenuPrincipal.CambiarDireccionAlColisionarConRectangulo(cpuPaletaMenuPrincipal.ObtenerRectangulo());
+            PlaySound(colisionWav);
         }
 
-        if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipalEnemigo.ObtenerRectangulo()))
+        // Colisión de la pelota con la paleta enemiga
+        if (pelotaMenuPrincipal.velocidad.y < 0)
         {
-            pelotaMenuPrincipal.AcabaDeColisionar(pelotaMenuPrincipal.posicion.x < cpuPaletaMenuPrincipalEnemigo.posicion.x || pelotaMenuPrincipal.posicion.x > cpuPaletaMenuPrincipalEnemigo.posicion.x + cpuPaletaMenuPrincipalEnemigo.tamaño.x);
+            if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipalEnemigo.ObtenerRectangulo()))
+            {
+                pelotaMenuPrincipal.CambiarDireccionAlColisionarConRectangulo(cpuPaletaMenuPrincipalEnemigo.ObtenerRectangulo());
+                PlaySound(colisionWav);
+            }
         }
 
+        // Colisiones de la pelota con los ladrillos
         for (int i = 0; i < MENU_PRINCIPAL_LADRILLOS_FILAS; i++)
         {
             for (int j = 0; j < MENU_PRINCIPAL_LADRILLOS_COLUMNAS; j++)
             {
                 if (ladrillosMenuPrincipal[i][j].activo)
                 {
-                    if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, ladrillosMenuPrincipal[i][j].ObtenerRectangulo()))
+                    if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, ladrillosMenuPrincipal[i][j].ObtenerRectangulo()))
                     {
                         ladrillosMenuPrincipal[i][j].activo = false;
-                        pelotaMenuPrincipal.AcabaDeColisionar(pelotaMenuPrincipal.posicion.x < ladrillosMenuPrincipal[i][j].posicion.x || pelotaMenuPrincipal.posicion.x > ladrillosMenuPrincipal[i][j].posicion.x + ladrillosMenuPrincipal[i][j].tamaño.x);
+                        pelotaMenuPrincipal.CambiarDireccionAlColisionarConRectangulo(ladrillosMenuPrincipal[i][j].ObtenerRectangulo());
+                        PlaySound(colisionWav);
                     }
                 }
             }
         }
 
-        for (int i = 0; i < 5; i++)
+        // Colisiones de la pelota con los obstáculos estáticos
+        for (int i = 0; i < 6; i++)
         {
-            if (CheckCollisionCircleRec(pelotaMenuPrincipal.posicion, pelotaMenuPrincipal.radio, obstaculoMenuPrincipal[i].ObtenerRectangulo()))
+            if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, obstaculoMenuPrincipal[i].ObtenerRectangulo()))
             {
-                pelotaMenuPrincipal.AcabaDeColisionar(pelotaMenuPrincipal.posicion.x < obstaculoMenuPrincipal[i].posicion.x || pelotaMenuPrincipal.posicion.x > obstaculoMenuPrincipal[i].posicion.x + obstaculoMenuPrincipal[i].tamaño.x);
+                pelotaMenuPrincipal.CambiarDireccionAlColisionarConRectangulo(obstaculoMenuPrincipal[i].ObtenerRectangulo());
+                PlaySound(colisionWav);
             }
         }
 
@@ -201,12 +255,12 @@ int main()
         cpuPaletaMenuPrincipal.Dibujar();
         cpuPaletaMenuPrincipalEnemigo.Dibujar();
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++)
         {
             obstaculoMenuPrincipal[i].Dibujar();
         }
 
-        DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 340, 160, WHITE);
+        DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 290, 160, WHITE);
 
         if (GuiButton(botonJugarRect, "Jugar"))
         {
@@ -236,6 +290,10 @@ int main()
     //===============> Cierre
 
     UnloadRenderTexture(juegoRenderTextura);
+    UnloadSound(colisionWav);
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }
+
+//==============================> Funciones

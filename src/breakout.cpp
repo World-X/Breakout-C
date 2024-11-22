@@ -35,33 +35,66 @@ Pelota::Pelota(Vector2 _posicion, Vector2 _velocidad, float _radio, Color _color
     color = _color;
 }
 
-void Pelota::AcabaDeColisionar(bool _horizontal)
+void Pelota::CambiarDireccionAlColisionarConRectangulo(Rectangle rectangulo_colision)
 {
-    if (_horizontal)
+    Vector2 pelotaVirtualPosicion = {posicion.x + velocidad.x * GetFrameTime(), posicion.y + velocidad.y * GetFrameTime()};
+    bool veniaDesdeArriba = posicion.y < rectangulo_colision.y;
+    bool veniaDesdeAbajo = posicion.y > rectangulo_colision.y + rectangulo_colision.height;
+    bool veniaDesdeIzquierda = posicion.x < rectangulo_colision.x;
+    bool veniaDesdeDerecha = posicion.x > rectangulo_colision.x + rectangulo_colision.width;
+    bool entroPorArriba = pelotaVirtualPosicion.y < rectangulo_colision.y;
+    bool entroPorAbajo = pelotaVirtualPosicion.y > rectangulo_colision.y + rectangulo_colision.height;
+    bool entroPorLaIzquierda = pelotaVirtualPosicion.x < rectangulo_colision.x;
+    bool entroPorLaDerecha = pelotaVirtualPosicion.x > rectangulo_colision.x + rectangulo_colision.width;
+    if (veniaDesdeArriba && entroPorArriba || veniaDesdeAbajo && entroPorAbajo)
+    {
+        CambiarDireccion(Direccion::VERTICAL);
+        Mover(Direccion::VERTICAL);
+    }
+    if (veniaDesdeIzquierda && entroPorLaIzquierda || veniaDesdeDerecha && entroPorLaDerecha)
+    {
+        CambiarDireccion(Direccion::HORIZONTAL);
+        Mover(Direccion::HORIZONTAL);
+    }
+}
+
+void Pelota::CambiarDireccion(Direccion direccion_colision)
+{
+    if (direccion_colision == Direccion::HORIZONTAL)
     {
         velocidad.x *= -1.0f;
-        posicion.x += velocidad.x * GetFrameTime();
     }
-    else
+    else if (direccion_colision == Direccion::VERTICAL)
     {
         velocidad.y *= -1.0f;
+    }
+}
+
+void Pelota::Mover(Direccion direccion)
+{
+    if (direccion == Direccion::HORIZONTAL)
+    {
+        posicion.x += velocidad.x * GetFrameTime();
+    }
+    else if (direccion == Direccion::VERTICAL)
+    {
         posicion.y += velocidad.y * GetFrameTime();
     }
 }
 
 void Pelota::Actualizar()
 {
-    posicion.x += velocidad.x * GetFrameTime();
-    posicion.y += velocidad.y * GetFrameTime();
+    Mover(Direccion::HORIZONTAL);
+    Mover(Direccion::VERTICAL);
     if (posicion.x - radio <= 0.0f || posicion.x + radio >= juegoAncho)
     {
-        velocidad.x *= -1.0f;
-        posicion.x += velocidad.x * GetFrameTime();
+        CambiarDireccion(Direccion::HORIZONTAL);
+        Mover(Direccion::HORIZONTAL);
     }
     if (posicion.y - radio <= 0.0f || posicion.y + radio >= juegoAlto)
     {
-        velocidad.y *= -1.0f;
-        posicion.y += velocidad.y * GetFrameTime();
+        CambiarDireccion(Direccion::VERTICAL);
+        Mover(Direccion::VERTICAL);
     }
 }
 

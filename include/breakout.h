@@ -3,6 +3,14 @@
 #ifndef BREAKOUT_H
 #define BREAKOUT_H
 
+//==============================> Enumeraciones
+
+typedef enum
+{
+    HORIZONTAL = 0x01,
+    VERTICAL = 0x02
+} Direccion;
+
 //==============================> Clases
 
 class Pelota
@@ -15,7 +23,9 @@ public:
 
     Pelota(void);
     Pelota(Vector2 _posicion, Vector2 _velocidad, float _radio, Color _color);
-    void AcabaDeColisionar(bool _horizontal);
+    void CambiarDireccionAlColisionarConRectangulo(Rectangle rectangulo_colision);
+    void CambiarDireccion(Direccion direccion_colision);
+    void Mover(Direccion direccion);
     void Actualizar();
     void Dibujar();
 };

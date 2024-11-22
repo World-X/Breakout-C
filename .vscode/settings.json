@@ -11,6 +11,7 @@
 	"files.associations": {
 		"raylib.h": "c",
 		"resource_dir.h": "c",
-		"random": "cpp"
+		"random": "cpp",
+		"raymath.h": "c"
 	}
 }
