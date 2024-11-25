@@ -54,8 +54,8 @@ typedef enum
 
 int juegoAncho = 1920;
 int juegoAlto = 1080;
-int mitadJuegoAncho = juegoAncho / 2;
-int mitadJuegoAlto = juegoAlto / 2;
+int mitadJuegoAncho;
+int mitadJuegoAlto;
 
 //===============> Manejo de escenas
 
@@ -74,7 +74,9 @@ int main()
 
     //===============> Inicialización de ventana
 
-    SetConfigFlags(ConfigFlags::FLAG_WINDOW_RESIZABLE | ConfigFlags::FLAG_VSYNC_HINT);
+    mitadJuegoAncho = juegoAncho / 2;
+    mitadJuegoAlto = juegoAlto / 2;
+    SetConfigFlags((ConfigFlags)FLAG_WINDOW_RESIZABLE | (ConfigFlags)FLAG_VSYNC_HINT);
     int ventanaAncho = 1280;
     int ventanaAlto = 720;
     const char *juegoTitulo = "Breakout";
@@ -89,32 +91,32 @@ int main()
 
     //===============> Configuración de raylib
 
-    SetTraceLogLevel(TraceLogLevel::LOG_TRACE);
+    SetTraceLogLevel((TraceLogLevel)LOG_TRACE);
     SetExitKey(KEY_NULL);
 
     //===============> Inicialización de GUI
 
-    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_SIZE, 50);
-    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_SPACING, 4);
+    GuiSetStyle((GuiControl)DEFAULT, (GuiDefaultProperty)TEXT_SIZE, 50);
+    GuiSetStyle((GuiControl)DEFAULT, (GuiDefaultProperty)TEXT_SPACING, 4);
 
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::TEXT_COLOR_NORMAL, ColorToInt(RAYWHITE));
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BASE_COLOR_NORMAL, ColorToInt(DARKGRAY));
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BORDER_COLOR_NORMAL, ColorToInt(RAYWHITE));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)TEXT_COLOR_NORMAL, ColorToInt(RAYWHITE));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)BASE_COLOR_NORMAL, ColorToInt(DARKGRAY));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)BORDER_COLOR_NORMAL, ColorToInt(RAYWHITE));
 
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::TEXT_COLOR_FOCUSED, ColorToInt(RAYWHITE));
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BASE_COLOR_FOCUSED, ColorToInt(GRAY));
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BORDER_COLOR_FOCUSED, ColorToInt(RAYWHITE));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)TEXT_COLOR_FOCUSED, ColorToInt(RAYWHITE));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)BASE_COLOR_FOCUSED, ColorToInt(GRAY));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)BORDER_COLOR_FOCUSED, ColorToInt(RAYWHITE));
 
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::TEXT_COLOR_PRESSED, ColorToInt(DARKGRAY));
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BASE_COLOR_PRESSED, ColorToInt(LIGHTGRAY));
-    GuiSetStyle(GuiControl::BUTTON, GuiControlProperty::BORDER_COLOR_PRESSED, ColorToInt(DARKGRAY));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)TEXT_COLOR_PRESSED, ColorToInt(DARKGRAY));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)BASE_COLOR_PRESSED, ColorToInt(LIGHTGRAY));
+    GuiSetStyle((GuiControl)BUTTON, (GuiControlProperty)BORDER_COLOR_PRESSED, ColorToInt(DARKGRAY));
 
     GuiSetIconScale(3);
 
     //===============> Variables locales a la función principal
 
     RenderTexture2D juegoRenderTextura = LoadRenderTexture(juegoAncho, juegoAlto);
-    SetTextureFilter(juegoRenderTextura.texture, TextureFilter::TEXTURE_FILTER_BILINEAR);
+    SetTextureFilter(juegoRenderTextura.texture, (TextureFilter)TEXTURE_FILTER_BILINEAR);
 
     //==========> Menú principal
 
@@ -131,17 +133,17 @@ int main()
 
     //=====> Pelota
 
-    Pelota pelotaMenuPrincipal = Pelota((Vector2){mitadJuegoAncho, mitadJuegoAlto}, (Vector2){(float)GetRandomValue(300, 420), (float)GetRandomValue(300, 420)}, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF});
+    Pelota pelotaMenuPrincipal = (Pelota){(Vector2){mitadJuegoAncho, mitadJuegoAlto}, (Vector2){(float)GetRandomValue(300, 420), (float)GetRandomValue(300, 420)}, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF}};
 
     if (GetRandomValue(0, 1) == 0)
     {
-        pelotaMenuPrincipal.velocidad.x *= -1.0f;
+        CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)HORIZONTAL);
     }
 
     //=====> Paletas
 
-    CPUPaleta cpuPaletaMenuPrincipal = CPUPaleta((Vector2){mitadJuegoAncho, juegoAlto - 140.0f}, (Vector2){200.0f, 20.0f}, 440.0f, 4, 2.0f, (Color){186, 0xFF, 0xFF, 0xFF});
-    CPUPaleta cpuPaletaMenuPrincipalEnemigo = CPUPaleta((Vector2){mitadJuegoAncho, 260.0f}, (Vector2){100.0f, 20.0f}, 200.0f, 4, 2.0f, (Color){0xFF, 186, 186, 0xFF});
+    Paleta jugadorPaletaMenuPrincipal = (Paleta){(Vector2){mitadJuegoAncho, juegoAlto - 140.0f}, (Vector2){200.0f, 20.0f}, 440.0f, 4, 2.0f, (Color){186, 0xFF, 0xFF, 0xFF}};
+    Paleta cpuPaletaMenuPrincipal = (Paleta){(Vector2){mitadJuegoAncho, 260.0f}, (Vector2){100.0f, 20.0f}, 200.0f, 4, 2.0f, (Color){0xFF, 186, 186, 0xFF}};
 
     //=====> Ladrillos
 
@@ -153,12 +155,12 @@ int main()
     //=====> Obstáculos
 
     Obstaculo obstaculoMenuPrincipal[6];
-    obstaculoMenuPrincipal[0] = Obstaculo((Vector2){306.0f, 720.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[1] = Obstaculo((Vector2){574.0f, 524.0f}, (Vector2){128.0f, 64.0f}, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[2] = Obstaculo((Vector2){1487.0f, 433.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[3] = Obstaculo((Vector2){173.0f, 389.0f}, (Vector2){64.0f, 64.0f}, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[4] = Obstaculo((Vector2){1599.0f, 691.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f);
-    obstaculoMenuPrincipal[5] = Obstaculo((Vector2){1329.0f, 664.0f}, (Vector2){64.0f, 128.0f}, BLACK, WHITE, 2.0f);
+    obstaculoMenuPrincipal[0] = (Obstaculo){(Vector2){306.0f, 720.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f};
+    obstaculoMenuPrincipal[1] = (Obstaculo){(Vector2){574.0f, 524.0f}, (Vector2){128.0f, 64.0f}, BLACK, WHITE, 2.0f};
+    obstaculoMenuPrincipal[2] = (Obstaculo){(Vector2){1487.0f, 433.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f};
+    obstaculoMenuPrincipal[3] = (Obstaculo){(Vector2){173.0f, 389.0f}, (Vector2){64.0f, 64.0f}, BLACK, WHITE, 2.0f};
+    obstaculoMenuPrincipal[4] = (Obstaculo){(Vector2){1599.0f, 691.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f};
+    obstaculoMenuPrincipal[5] = (Obstaculo){(Vector2){1329.0f, 664.0f}, (Vector2){64.0f, 128.0f}, BLACK, WHITE, 2.0f};
 
     //==========> Juego
 
@@ -170,6 +172,7 @@ int main()
     bool haEmpezadoJuego = false;
     char puntosTexto[10] = {0};
     char nivelTexto[10] = {0};
+    bool acabaDePausar = false;
 
     //=====> Botones
 
@@ -183,11 +186,11 @@ int main()
 
     //=====> Pelota
 
-    Pelota pelotaJuego = Pelota((Vector2){(float)GetRandomValue(0, juegoAncho - 20.0f), 275.0f}, (Vector2){0.0f, 0.0f}, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF});
+    Pelota pelotaJuego = (Pelota){(Vector2){(float)GetRandomValue(0, juegoAncho - 20.0f), 275.0f}, (Vector2){0.0f, 0.0f}, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF}};
 
     //=====> Paletas
 
-    Paleta jugadorPaleta = Paleta((Vector2){mitadJuegoAncho, juegoAlto - 140.0f}, (Vector2){300.0f, 20.0f}, 600.0f, 4, 2.0f, (Color){186, 0xFF, 0xFF, 0xFF});
+    Paleta jugadorPaleta = (Paleta){(Vector2){mitadJuegoAncho, juegoAlto - 140.0f}, (Vector2){300.0f, 20.0f}, 600.0f, 4, 2.0f, (Color){186, 0xFF, 0xFF, 0xFF}};
 
     //=====> Ladrillos
 
@@ -224,20 +227,20 @@ int main()
 
         //===============> Actualizar lógica del juego
 
-        if (escenaActual == Escena::ESCENA_MENU_PRINCIPAL)
+        if (escenaActual == (Escena)ESCENA_MENU_PRINCIPAL)
         {
-            pelotaMenuPrincipal.Actualizar();
-            cpuPaletaMenuPrincipal.Actualizar(pelotaMenuPrincipal.posicion);
-            cpuPaletaMenuPrincipalEnemigo.Actualizar(pelotaMenuPrincipal.posicion);
+            ActualizarPelota(&pelotaMenuPrincipal);
+            ActualizarCPUPaleta(&cpuPaletaMenuPrincipal, pelotaMenuPrincipal.posicion);
+            ActualizarCPUPaleta(&jugadorPaletaMenuPrincipal, pelotaMenuPrincipal.posicion);
 
             //! TECLAS DE DEPURACIÓN
             if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN))
             {
-                pelotaMenuPrincipal.velocidad.y *= -1.0f;
+                CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)VERTICAL);
             }
             else if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT))
             {
-                pelotaMenuPrincipal.velocidad.x *= -1.0f;
+                CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)HORIZONTAL);
             }
             else if (IsKeyPressed(KEY_MINUS))
             {
@@ -248,38 +251,38 @@ int main()
                 pelotaMenuPrincipal.velocidad = Vector2Scale(pelotaMenuPrincipal.velocidad, 2.0f);
             }
         }
-        else if (escenaActual == Escena::ESCENA_JUEGO)
+        else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
             //! TECLAS DE DEPURACIÓN
             if (!pausaJuego)
             {
                 if (haEmpezadoJuego)
                 {
-                    pelotaJuego.Actualizar();
+                    ActualizarPelota(&pelotaJuego);
                 }
-                jugadorPaleta.Actualizar();
+                ActualizarPaleta(&jugadorPaleta);
             }
         }
 
         //===============> Colisiones
 
-        if (escenaActual == Escena::ESCENA_MENU_PRINCIPAL)
+        if (escenaActual == (Escena)ESCENA_MENU_PRINCIPAL)
         {
             Vector2 pelotaMenuPrincipalVirtualPosicion = {pelotaMenuPrincipal.posicion.x + pelotaMenuPrincipal.velocidad.x * GetFrameTime(), pelotaMenuPrincipal.posicion.y + pelotaMenuPrincipal.velocidad.y * GetFrameTime()};
 
             // Colisión de la pelota con la paleta del jugador
-            if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipal.ObtenerRectangulo()))
+            if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, ObtenerRectanguloPaleta(&jugadorPaletaMenuPrincipal)))
             {
-                pelotaMenuPrincipal.CambiarDireccionAlColisionarConRectangulo(cpuPaletaMenuPrincipal.ObtenerRectangulo());
+                CambiarDireccionColisionRectPelota(&pelotaMenuPrincipal, ObtenerRectanguloPaleta(&jugadorPaletaMenuPrincipal));
                 PlaySound(colisionWav);
             }
 
             // Colisión de la pelota con la paleta enemiga
             if (pelotaMenuPrincipal.velocidad.y < 0)
             {
-                if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, cpuPaletaMenuPrincipalEnemigo.ObtenerRectangulo()))
+                if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, ObtenerRectanguloPaleta(&cpuPaletaMenuPrincipal)))
                 {
-                    pelotaMenuPrincipal.CambiarDireccionAlColisionarConRectangulo(cpuPaletaMenuPrincipalEnemigo.ObtenerRectangulo());
+                    CambiarDireccionColisionRectPelota(&pelotaMenuPrincipal, ObtenerRectanguloPaleta(&cpuPaletaMenuPrincipal));
                     PlaySound(colisionWav);
                 }
             }
@@ -291,11 +294,11 @@ int main()
                 {
                     if (ladrillosMenuPrincipal[i][j].activo)
                     {
-                        if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, ladrillosMenuPrincipal[i][j].ObtenerRectangulo()))
+                        if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, ObtenerRectanguloLadrillo(&ladrillosMenuPrincipal[i][j])))
                         {
                             ladrillosMenuPrincipal[i][j].activo = false;
-                            pelotaMenuPrincipal.CambiarDireccionAlColisionarConRectangulo(ladrillosMenuPrincipal[i][j].ObtenerRectangulo());
-                            // PlaySound(colisionWav);
+                            CambiarDireccionColisionRectPelota(&pelotaMenuPrincipal, ObtenerRectanguloLadrillo(&ladrillosMenuPrincipal[i][j]));
+                            PlaySound(colisionWav);
                             // puntosJugador += ladrillosMenuPrincipal[i][j].puntos;
                         }
                     }
@@ -305,19 +308,19 @@ int main()
             // Colisiones de la pelota con los obstáculos estáticos
             for (int i = 0; i < 6; i++)
             {
-                if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, obstaculoMenuPrincipal[i].ObtenerRectangulo()))
+                if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, ObtenerRectanguloObstaculo(&obstaculoMenuPrincipal[i])))
                 {
-                    pelotaMenuPrincipal.CambiarDireccionAlColisionarConRectangulo(obstaculoMenuPrincipal[i].ObtenerRectangulo());
+                    CambiarDireccionColisionRectPelota(&pelotaMenuPrincipal, ObtenerRectanguloObstaculo(&obstaculoMenuPrincipal[i]));
                     PlaySound(colisionWav);
                 }
             }
         }
-        else if (escenaActual == Escena::ESCENA_JUEGO)
+        else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
             // Colisión de la pelota con la paleta del jugador
-            if (CheckCollisionCircleRec(pelotaJuego.posicion, pelotaJuego.radio, jugadorPaleta.ObtenerRectangulo()))
+            if (CheckCollisionCircleRec(pelotaJuego.posicion, pelotaJuego.radio, ObtenerRectanguloPaleta(&jugadorPaleta)))
             {
-                pelotaJuego.CambiarDireccionAlColisionarConRectangulo(jugadorPaleta.ObtenerRectangulo());
+                CambiarDireccionColisionRectPelota(&pelotaJuego, ObtenerRectanguloPaleta(&jugadorPaleta));
                 PlaySound(colisionWav);
             }
 
@@ -328,10 +331,10 @@ int main()
                 {
                     if (ladrillosJuego[i][j].activo)
                     {
-                        if (CheckCollisionCircleRec(pelotaJuego.posicion, pelotaJuego.radio, ladrillosJuego[i][j].ObtenerRectangulo()))
+                        if (CheckCollisionCircleRec(pelotaJuego.posicion, pelotaJuego.radio, ObtenerRectanguloLadrillo(&ladrillosJuego[i][j])))
                         {
                             ladrillosJuego[i][j].activo = false;
-                            pelotaJuego.CambiarDireccionAlColisionarConRectangulo(ladrillosJuego[i][j].ObtenerRectangulo());
+                            CambiarDireccionColisionRectPelota(&pelotaJuego, ObtenerRectanguloLadrillo(&ladrillosJuego[i][j]));
                             PlaySound(colisionWav);
                             puntosJugador += ladrillosJuego[i][j].puntos;
                             sprintf(puntosTexto, "%u", puntosJugador);
@@ -349,7 +352,7 @@ int main()
 
         DrawRectangleGradientV(0, 0, juegoAncho, juegoAlto, (Color){0xFF, 0xFF, 0xFF, 0x0F}, (Color){0x00, 0x00, 0x00, 0x0F});
 
-        if (escenaActual == Escena::ESCENA_MENU_PRINCIPAL)
+        if (escenaActual == (Escena)ESCENA_MENU_PRINCIPAL)
         {
 
             for (int i = 0; i < MENU_PRINCIPAL_LADRILLOS_FILAS; i++)
@@ -358,18 +361,18 @@ int main()
                 {
                     if (ladrillosMenuPrincipal[i][j].activo)
                     {
-                        ladrillosMenuPrincipal[i][j].Dibujar();
+                        DibujarLadrillo(&ladrillosMenuPrincipal[i][j]);
                     }
                 }
             }
 
-            pelotaMenuPrincipal.Dibujar();
-            cpuPaletaMenuPrincipal.Dibujar();
-            cpuPaletaMenuPrincipalEnemigo.Dibujar();
+            DibujarPelota(&pelotaMenuPrincipal);
+            DibujarPaleta(&jugadorPaletaMenuPrincipal);
+            DibujarPaleta(&cpuPaletaMenuPrincipal);
 
             for (int i = 0; i < 6; i++)
             {
-                obstaculoMenuPrincipal[i].Dibujar();
+                DibujarObstaculo(&obstaculoMenuPrincipal[i]);
             }
 
             DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 290, 160, WHITE);
@@ -379,7 +382,7 @@ int main()
                 TraceLog(LOG_INFO, "JUGAR");
                 CambiarEscena(ESCENA_JUEGO);
                 GenerarLadrillos((Ladrillo *)ladrillosJuego, 3, 5, 16.0f, ladrillosColoresJuego, 48.0f);
-                GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_SIZE, 70);
+                GuiSetStyle((GuiControl)DEFAULT, (GuiDefaultProperty)TEXT_SIZE, 70);
                 nivelActual = 1;
                 puntosJugador = 0;
                 haEmpezadoJuego = false;
@@ -397,7 +400,7 @@ int main()
                 break;
             }
         }
-        else if (escenaActual == Escena::ESCENA_JUEGO)
+        else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
             for (int i = 0; i < 3; i++)
             {
@@ -405,13 +408,13 @@ int main()
                 {
                     if (ladrillosJuego[i][j].activo)
                     {
-                        ladrillosJuego[i][j].Dibujar();
+                        DibujarLadrillo(&ladrillosJuego[i][j]);
                     }
                 }
             }
 
-            pelotaJuego.Dibujar();
-            jugadorPaleta.Dibujar();
+            DibujarPelota(&pelotaJuego);
+            DibujarPaleta(&jugadorPaleta);
 
             if (!haEmpezadoJuego)
             {
@@ -421,7 +424,7 @@ int main()
                     pelotaJuego.velocidad = (Vector2){(float)GetRandomValue(200, 300), (float)GetRandomValue(300, 420)};
                     if (rand() % 2 == 0)
                     {
-                        pelotaJuego.velocidad.x *= -1.0f;
+                        CambiarDireccionPelota(&pelotaJuego, (Direccion)HORIZONTAL);
                     }
                 }
             }
@@ -432,11 +435,11 @@ int main()
                     TraceLog(LOG_INFO, "REANUDAR");
                     pausaJuego = false;
                 }
-                if (GuiButton(botonSalirJuegoRect, "Salir") || IsKeyPressed(KEY_ESCAPE))
+                if (GuiButton(botonSalirJuegoRect, "Salir") || IsKeyPressed(KEY_ESCAPE) && !acabaDePausar)
                 {
                     TraceLog(LOG_INFO, "SALIR");
                     CambiarEscena(ESCENA_MENU_PRINCIPAL);
-                    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_SIZE, 50);
+                    GuiSetStyle((GuiControl)DEFAULT, (GuiDefaultProperty)TEXT_SIZE, 50);
                 }
             }
 
@@ -468,11 +471,19 @@ int main()
 
         //===============> Lógica después de dibujar
 
-        if (escenaActual == Escena::ESCENA_JUEGO)
+        if (escenaActual == (Escena)ESCENA_JUEGO)
         {
-            if (haEmpezadoJuego && !pausaJuego && IsKeyPressed(KEY_ESCAPE))
+            if (haEmpezadoJuego)
             {
-                pausaJuego = true;
+                if (!pausaJuego && IsKeyPressed(KEY_ESCAPE))
+                {
+                    pausaJuego = true;
+                    acabaDePausar = true;
+                }
+                else if (pausaJuego && IsKeyReleased(KEY_ESCAPE))
+                {
+                    acabaDePausar = false;
+                }
             }
         }
     }
@@ -493,7 +504,7 @@ void CambiarEscena(Escena nueva_escena)
     escenaActual = nueva_escena;
 }
 
-void GenerarLadrillos(Ladrillo *ladrillos, int filas, int columnas, float separacion, const Color *colores, float desplazamiento_vertical = 0.0f)
+void GenerarLadrillos(Ladrillo *ladrillos, int filas, int columnas, float separacion, const Color *colores, float desplazamiento_vertical)
 {
     for (int fila = 0; fila < filas; fila++)
     {
@@ -501,7 +512,7 @@ void GenerarLadrillos(Ladrillo *ladrillos, int filas, int columnas, float separa
         {
             Vector2 tamaño = (Vector2){(juegoAncho - separacion * (columnas + 1)) / columnas, 30.0f};
             Vector2 posicion = (Vector2){columna * (tamaño.x + separacion) + separacion, fila * (tamaño.y + separacion) + separacion + desplazamiento_vertical};
-            *(ladrillos + fila * columnas + columna) = Ladrillo(posicion, tamaño, 0.5f, 4, colores[fila], true, 100 * (filas - fila));
+            *(ladrillos + fila * columnas + columna) = (Ladrillo){posicion, tamaño, 0.5f, 4, colores[fila], true, 100 * (filas - fila)};
         }
     }
 }

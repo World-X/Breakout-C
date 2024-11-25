@@ -5,62 +5,34 @@
 
 //==============================> Enumeraciones
 
-typedef enum
+typedef enum Direccion
 {
     HORIZONTAL = 0x01,
     VERTICAL = 0x02
 } Direccion;
 
-//==============================> Clases
+//==============================> Estructuras
 
-class Pelota
+typedef struct Pelota
 {
-public:
     Vector2 posicion;
     Vector2 velocidad;
     float radio;
     Color color;
+} Pelota;
 
-    Pelota(void);
-    Pelota(Vector2 _posicion, Vector2 _velocidad, float _radio, Color _color);
-    void CambiarDireccionAlColisionarConRectangulo(Rectangle rectangulo_colision);
-    void CambiarDireccion(Direccion direccion_colision);
-    void Mover(Direccion direccion);
-    void Actualizar();
-    void Dibujar();
-};
-
-class Paleta
+typedef struct Paleta
 {
-public:
     Vector2 posicion;
     Vector2 tamaño;
     float velocidad;
     int segmentos;
     float redondez;
     Color color;
+} Paleta;
 
-    Paleta(void);
-    Paleta(Vector2 _posicion, Vector2 _tamaño, float _velocidad, int _segmentos, float _redondez, Color _color);
-    Rectangle ObtenerRectangulo();
-    void Actualizar();
-    void Dibujar();
-
-protected:
-    void LimitarMovimiento();
-};
-
-class CPUPaleta : public Paleta
+typedef struct Ladrillo
 {
-public:
-    CPUPaleta(void);
-    CPUPaleta(Vector2 _posicion, Vector2 _tamaño, float _velocidad, int _segmentos, float _redondez, Color _color);
-    void Actualizar(Vector2 _pelotaPosicion);
-};
-
-class Ladrillo
-{
-public:
     Vector2 posicion;
     Vector2 tamaño;
     float redondez;
@@ -68,27 +40,51 @@ public:
     Color color;
     bool activo;
     int puntos;
+} Ladrillo;
 
-    Ladrillo(void);
-    Ladrillo(Vector2 _posicion, Vector2 _tamaño, float _redondez, int _segmentos, Color _color, bool _activo, int _puntos);
-    Rectangle ObtenerRectangulo();
-    void Dibujar();
-};
-
-class Obstaculo
+typedef struct Obstaculo
 {
-public:
     Vector2 posicion;
     Vector2 tamaño;
     Color color_principal;
     Color color_contorno;
     float grosor;
+} Obstaculo;
 
-    Obstaculo(void);
-    Obstaculo(Vector2 _posicion, Vector2 _tamaño, Color _color_principal, Color _color_contorno, float _grosor);
-    Rectangle ObtenerRectangulo();
-    void Dibujar();
-};
+//==============================> Prototipos de funciones
+
+//===============> General
+
+float CalcularMovimiento(float velocidad);
+
+//===============> Paleta
+
+void CambiarDireccionPelota(Pelota *pelota, Direccion direccion);
+void CambiarDireccionColisionRectPelota(Pelota *pelota, Rectangle rectangulo);
+void MoverPelota(Pelota *pelota, Direccion direccion);
+void ActualizarPelota(Pelota *pelota);
+void DibujarPelota(Pelota *pelota);
+
+//===============> Paleta
+
+void ActualizarPaleta(Paleta *paleta);
+void DibujarPaleta(Paleta *paleta);
+void _LimitarMovimientoPaleta(Paleta *paleta);
+Rectangle ObtenerRectanguloPaleta(Paleta *paleta);
+
+//==========> CPUPaleta
+
+void ActualizarCPUPaleta(Paleta *cpu_paleta, Vector2 posicion_pelota);
+
+//===============> Ladrillo
+
+void DibujarLadrillo(Ladrillo *ladrillo);
+Rectangle ObtenerRectanguloLadrillo(Ladrillo *ladrillo);
+
+//===============> Obstaculo
+
+void DibujarObstaculo(Obstaculo *obstaculo);
+Rectangle ObtenerRectanguloObstaculo(Obstaculo *obstaculo);
 
 //==============================> Fin
 
