@@ -63,6 +63,7 @@ Escena escenaActual = ESCENA_MENU_PRINCIPAL;
 
 //==============================> Prototipos de funciones
 
+void CambiarPantallaCompleta(int ventana_ancho, int ventana_alto);
 void CambiarEscena(Escena nueva_escena);
 void GenerarLadrillos(Ladrillo *ladrillos, int filas, int columnas, float separacion, const Color *colores, float desplazamiento_vertical);
 
@@ -79,6 +80,8 @@ int main()
     SetConfigFlags((ConfigFlags)FLAG_WINDOW_RESIZABLE | (ConfigFlags)FLAG_VSYNC_HINT);
     int ventanaAncho = 1280;
     int ventanaAlto = 720;
+    int ventanaAnchoAnterior = ventanaAncho;
+    int ventanaAltoAnterior = ventanaAlto;
     const char *juegoTitulo = "Breakout";
     InitWindow(ventanaAncho, ventanaAlto, juegoTitulo);
     SetTargetFPS(60);
@@ -91,7 +94,7 @@ int main()
 
     //===============> Configuración de raylib
 
-    SetTraceLogLevel((TraceLogLevel)LOG_TRACE);
+    SetTraceLogLevel((TraceLogLevel)LOG_ALL);
     SetExitKey(KEY_NULL);
 
     //===============> Inicialización de GUI
@@ -133,9 +136,12 @@ int main()
 
     //=====> Pelota
 
-    Pelota pelotaMenuPrincipal = (Pelota){(Vector2){mitadJuegoAncho, mitadJuegoAlto}, (Vector2){(float)GetRandomValue(300, 420), (float)GetRandomValue(300, 420)}, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF}};
-
-    if (GetRandomValue(0, 1) == 0)
+    Pelota pelotaMenuPrincipal = (Pelota){VECTOR2_CERO, VECTOR2_CERO, VECTOR2_UNO, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF}};
+    pelotaMenuPrincipal.posicion.x = (float)GetRandomValue(0, juegoAncho - 20.0f);
+    pelotaMenuPrincipal.posicion.y = 275.0f;
+    pelotaMenuPrincipal.velocidad.x = 300.0f;
+    pelotaMenuPrincipal.velocidad.y = (float)GetRandomValue(200, 350);
+    if (rand() % 2 == 0)
     {
         CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)HORIZONTAL);
     }
@@ -155,12 +161,12 @@ int main()
     //=====> Obstáculos
 
     Obstaculo obstaculoMenuPrincipal[6];
-    obstaculoMenuPrincipal[0] = (Obstaculo){(Vector2){306.0f, 720.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f};
-    obstaculoMenuPrincipal[1] = (Obstaculo){(Vector2){574.0f, 524.0f}, (Vector2){128.0f, 64.0f}, BLACK, WHITE, 2.0f};
-    obstaculoMenuPrincipal[2] = (Obstaculo){(Vector2){1487.0f, 433.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f};
-    obstaculoMenuPrincipal[3] = (Obstaculo){(Vector2){173.0f, 389.0f}, (Vector2){64.0f, 64.0f}, BLACK, WHITE, 2.0f};
-    obstaculoMenuPrincipal[4] = (Obstaculo){(Vector2){1599.0f, 691.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f};
-    obstaculoMenuPrincipal[5] = (Obstaculo){(Vector2){1329.0f, 664.0f}, (Vector2){64.0f, 128.0f}, BLACK, WHITE, 2.0f};
+    obstaculoMenuPrincipal[0] = (Obstaculo){(Vector2){306.0f, 720.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f, 0.0f};
+    obstaculoMenuPrincipal[1] = (Obstaculo){(Vector2){574.0f, 524.0f}, (Vector2){128.0f, 64.0f}, BLACK, WHITE, 2.0f, 0.0f};
+    obstaculoMenuPrincipal[2] = (Obstaculo){(Vector2){1487.0f, 433.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f, 0.0f};
+    obstaculoMenuPrincipal[3] = (Obstaculo){(Vector2){173.0f, 389.0f}, (Vector2){64.0f, 64.0f}, BLACK, WHITE, 2.0f, 0.0f};
+    obstaculoMenuPrincipal[4] = (Obstaculo){(Vector2){1599.0f, 691.0f}, (Vector2){96.0f, 96.0f}, BLACK, WHITE, 2.0f, 0.0f};
+    obstaculoMenuPrincipal[5] = (Obstaculo){(Vector2){1329.0f, 664.0f}, (Vector2){64.0f, 128.0f}, BLACK, WHITE, 2.0f, 0.0f};
 
     //==========> Juego
 
@@ -186,7 +192,9 @@ int main()
 
     //=====> Pelota
 
-    Pelota pelotaJuego = (Pelota){(Vector2){(float)GetRandomValue(0, juegoAncho - 20.0f), 275.0f}, (Vector2){0.0f, 0.0f}, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF}};
+    Pelota pelotaJuego = (Pelota){VECTOR2_CERO, VECTOR2_CERO, VECTOR2_UNO, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF}};
+    pelotaJuego.posicion.x = (float)GetRandomValue(0, juegoAncho - 20.0f);
+    pelotaJuego.posicion.y = 275.0f;
 
     //=====> Paletas
 
@@ -227,6 +235,18 @@ int main()
 
         //===============> Actualizar lógica del juego
 
+        if (IsKeyPressed(KEY_ENTER) && (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) || IsKeyPressed(KEY_F))
+        {
+            if (!IsWindowFullscreen())
+            {
+                ventanaAnchoAnterior = ventanaAncho;
+                ventanaAltoAnterior = ventanaAlto;
+            }
+            CambiarPantallaCompleta(ventanaAnchoAnterior, ventanaAltoAnterior);
+            ventanaAncho = GetScreenWidth();
+            ventanaAlto = GetScreenHeight();
+        }
+
         if (escenaActual == (Escena)ESCENA_MENU_PRINCIPAL)
         {
             ActualizarPelota(&pelotaMenuPrincipal);
@@ -234,6 +254,7 @@ int main()
             ActualizarCPUPaleta(&jugadorPaletaMenuPrincipal, pelotaMenuPrincipal.posicion);
 
             //! TECLAS DE DEPURACIÓN
+            /*
             if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN))
             {
                 CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)VERTICAL);
@@ -250,6 +271,7 @@ int main()
             {
                 pelotaMenuPrincipal.velocidad = Vector2Scale(pelotaMenuPrincipal.velocidad, 2.0f);
             }
+            */
         }
         else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
@@ -268,7 +290,7 @@ int main()
 
         if (escenaActual == (Escena)ESCENA_MENU_PRINCIPAL)
         {
-            Vector2 pelotaMenuPrincipalVirtualPosicion = {pelotaMenuPrincipal.posicion.x + pelotaMenuPrincipal.velocidad.x * GetFrameTime(), pelotaMenuPrincipal.posicion.y + pelotaMenuPrincipal.velocidad.y * GetFrameTime()};
+            Vector2 pelotaMenuPrincipalVirtualPosicion = {pelotaMenuPrincipal.posicion.x + CalcularMovimiento(pelotaMenuPrincipal.velocidad.x, pelotaMenuPrincipal.aceleracion.x), pelotaMenuPrincipal.posicion.y + CalcularMovimiento(pelotaMenuPrincipal.velocidad.y, pelotaMenuPrincipal.aceleracion.y)};
 
             // Colisión de la pelota con la paleta del jugador
             if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, ObtenerRectanguloPaleta(&jugadorPaletaMenuPrincipal)))
@@ -311,7 +333,12 @@ int main()
                 if (CheckCollisionCircleRec(pelotaMenuPrincipalVirtualPosicion, pelotaMenuPrincipal.radio, ObtenerRectanguloObstaculo(&obstaculoMenuPrincipal[i])))
                 {
                     CambiarDireccionColisionRectPelota(&pelotaMenuPrincipal, ObtenerRectanguloObstaculo(&obstaculoMenuPrincipal[i]));
+                    obstaculoMenuPrincipal[i].modulo = 1.0f;
                     PlaySound(colisionWav);
+                }
+                if (obstaculoMenuPrincipal[i].modulo > 0.0f)
+                {
+                    obstaculoMenuPrincipal[i].modulo = MAX(0.0f, obstaculoMenuPrincipal[i].modulo - 2.0f * GetFrameTime());
                 }
             }
         }
@@ -322,6 +349,15 @@ int main()
             {
                 CambiarDireccionColisionRectPelota(&pelotaJuego, ObtenerRectanguloPaleta(&jugadorPaleta));
                 PlaySound(colisionWav);
+                // Cambia la aceleración de la pelota en base a la posición de la pelota en la paleta
+                // Aceleración debe ser un valor entre 0 y 1
+                float mitadPaleta = jugadorPaleta.posicion.x + jugadorPaleta.tamaño.x / 2;
+                pelotaJuego.aceleracion.x = Clamp((abs(mitadPaleta - pelotaJuego.posicion.x) / (jugadorPaleta.tamaño.x / 2)) * 2.0f, 0.1f, 1.9f);
+                pelotaJuego.aceleracion.y = Clamp(2.0f - pelotaJuego.aceleracion.x, 0.5f, 2.0f);
+                if (pelotaJuego.posicion.x < mitadPaleta && pelotaJuego.velocidad.x > 0 || pelotaJuego.posicion.x > mitadPaleta && pelotaJuego.velocidad.x < 0)
+                {
+                    pelotaJuego.velocidad.x = -pelotaJuego.velocidad.x;
+                }
             }
 
             // Colisiones de la pelota con los ladrillos
@@ -421,7 +457,8 @@ int main()
                 if (GuiButton((Rectangle){mitadJuegoAncho - anchoBotonPausa / 2, mitadJuegoAlto - altoBotonPausa / 2, anchoBotonPausa, altoBotonPausa}, "Empezar") || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER))
                 {
                     haEmpezadoJuego = true;
-                    pelotaJuego.velocidad = (Vector2){(float)GetRandomValue(200, 300), (float)GetRandomValue(300, 420)};
+                    pelotaJuego.velocidad.x = 350.0f + 50.0f * nivelActual;
+                    pelotaJuego.velocidad.y = pelotaJuego.velocidad.x;
                     if (rand() % 2 == 0)
                     {
                         CambiarDireccionPelota(&pelotaJuego, (Direccion)HORIZONTAL);
@@ -444,7 +481,7 @@ int main()
             }
 
             DrawText(puntosTexto, juegoAncho - MeasureText(puntosTexto, 48) - 10, 10, 48, RAYWHITE);
-            DrawText(nivelTexto, mitadJuegoAncho - MeasureText(nivelTexto, 64) / 2, juegoAlto - 96, 64, RAYWHITE);
+            DrawText(nivelTexto, mitadJuegoAncho - MeasureText(nivelTexto, 64) / 2, juegoAlto - 84, 64, RAYWHITE);
         }
 
         EndTextureMode();
@@ -452,21 +489,21 @@ int main()
         //===============> Dibujo
 
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground((Color){0x08, 0x08, 0x08, 0xFF});
         DrawTexturePro(juegoRenderTextura.texture, (Rectangle){0, 0, (float)juegoAncho, (float)-juegoAlto}, (Rectangle){(ventanaAncho - juegoAncho * juegoEscala) / 2, (ventanaAlto - juegoAlto * juegoEscala) / 2, juegoAncho * juegoEscala, juegoAlto * juegoEscala}, (Vector2){0, 0}, 0, WHITE);
+#ifdef DEBUG
         DrawFPS(10, 10);
-        /*
-        // DrawText(TextFormat("Mouse: (%.0f, %.0f)", mouseVirtual.x, mouseVirtual.y), 10, 10, 20, WHITE);
-        if (escenaActual == Escena::ESCENA_MENU_PRINCIPAL)
+        DrawText(TextFormat("Mouse: (%.0f, %.0f)", mouseVirtual.x, mouseVirtual.y), 10, 40, 20, WHITE);
+        if (escenaActual == (Escena)ESCENA_MENU_PRINCIPAL)
         {
-            // DrawText("MENU PRINCIPAL", ventanaAncho - MeasureText("MENU PRINCIPAL", 20) - 10, 10, 20, WHITE);
+            DrawText("MENU PRINCIPAL", 10, 70, 20, WHITE);
         }
-        else if (escenaActual == Escena::ESCENA_JUEGO)
+        else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
-            // DrawText(TextFormat("Puntos: %u", puntosJugador), ventanaAncho / 2 - MeasureText("Puntos: 100", 36) / 2, ventanaAlto - 48, 36, WHITE);
-            // DrawText("JUEGO", ventanaAncho - MeasureText("JUEGO", 20) - 10, 10, 20, WHITE);
+            DrawText("JUEGO", 10, 70, 20, WHITE);
+            DrawText(TextFormat("Pelota Acel. (%.2f, %.2f)", pelotaJuego.aceleracion.x, pelotaJuego.aceleracion.y), 10, 100, 20, WHITE);
         }
-        */
+#endif
         EndDrawing();
 
         //===============> Lógica después de dibujar
@@ -502,6 +539,21 @@ int main()
 void CambiarEscena(Escena nueva_escena)
 {
     escenaActual = nueva_escena;
+}
+
+void CambiarPantallaCompleta(int ventana_ancho, int ventana_alto)
+{
+    if (IsWindowFullscreen())
+    {
+        ToggleFullscreen();
+        SetWindowSize(ventana_ancho, ventana_alto);
+    }
+    else
+    {
+        int monitor = GetCurrentMonitor();
+        SetWindowSize(GetMonitorWidth(monitor), GetMonitorHeight(monitor));
+        ToggleFullscreen();
+    }
 }
 
 void GenerarLadrillos(Ladrillo *ladrillos, int filas, int columnas, float separacion, const Color *colores, float desplazamiento_vertical)

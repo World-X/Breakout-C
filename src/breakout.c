@@ -19,9 +19,9 @@ extern int mitadJuegoAlto;
 
 //===============> General
 
-float CalcularMovimiento(float velocidad)
+float CalcularMovimiento(float velocidad, float aceleracion)
 {
-    return velocidad * GetFrameTime();
+    return velocidad * GetFrameTime() * aceleracion;
 }
 
 //===============> Pelota
@@ -65,11 +65,11 @@ void MoverPelota(Pelota *pelota, Direccion direccion)
 {
     if (direccion == (Direccion)HORIZONTAL)
     {
-        pelota->posicion.x += CalcularMovimiento(pelota->velocidad.x);
+        pelota->posicion.x += CalcularMovimiento(pelota->velocidad.x, pelota->aceleracion.x);
     }
     else if (direccion == (Direccion)VERTICAL)
     {
-        pelota->posicion.y += CalcularMovimiento(pelota->velocidad.y);
+        pelota->posicion.y += CalcularMovimiento(pelota->velocidad.y, pelota->aceleracion.y);
     }
 }
 
@@ -100,11 +100,11 @@ void ActualizarPaleta(Paleta *paleta)
 {
     if (IsKeyDown(KEY_LEFT))
     {
-        paleta->posicion.x -= CalcularMovimiento(paleta->velocidad);
+        paleta->posicion.x -= CalcularMovimiento(paleta->velocidad, 1.0f);
     }
     if (IsKeyDown(KEY_RIGHT))
     {
-        paleta->posicion.x += CalcularMovimiento(paleta->velocidad);
+        paleta->posicion.x += CalcularMovimiento(paleta->velocidad, 1.0f);
     }
     _LimitarMovimientoPaleta(paleta);
 }
@@ -137,11 +137,11 @@ void ActualizarCPUPaleta(Paleta *cpu_paleta, Vector2 posicion_pelota)
 {
     if (cpu_paleta->posicion.x + cpu_paleta->tamaño.x / 2 < posicion_pelota.x)
     {
-        cpu_paleta->posicion.x += CalcularMovimiento(cpu_paleta->velocidad);
+        cpu_paleta->posicion.x += CalcularMovimiento(cpu_paleta->velocidad, 1.0f);
     }
     if (cpu_paleta->posicion.x + cpu_paleta->tamaño.x / 2 > posicion_pelota.x)
     {
-        cpu_paleta->posicion.x -= CalcularMovimiento(cpu_paleta->velocidad);
+        cpu_paleta->posicion.x -= CalcularMovimiento(cpu_paleta->velocidad, 1.0f);
     }
     _LimitarMovimientoPaleta(cpu_paleta);
 }
@@ -165,7 +165,7 @@ Rectangle ObtenerRectanguloLadrillo(Ladrillo *ladrillo)
 
 void DibujarObstaculo(Obstaculo *obstaculo)
 {
-    DrawRectangle(obstaculo->posicion.x, obstaculo->posicion.y, obstaculo->tamaño.x, obstaculo->tamaño.y, obstaculo->color_principal);
+    DrawRectangle(obstaculo->posicion.x, obstaculo->posicion.y, obstaculo->tamaño.x, obstaculo->tamaño.y, ColorLerp(obstaculo->color_principal, WHITE, obstaculo->modulo));
     DrawRectangleLinesEx((Rectangle){obstaculo->posicion.x, obstaculo->posicion.y, obstaculo->tamaño.x, obstaculo->tamaño.y}, obstaculo->grosor, obstaculo->color_contorno);
 }
 

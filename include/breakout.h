@@ -3,6 +3,13 @@
 #ifndef BREAKOUT_H
 #define BREAKOUT_H
 
+//==============================> Macros
+
+#define VECTOR2_CERO \
+    (Vector2) { 0.0f, 0.0f }
+#define VECTOR2_UNO \
+    (Vector2) { 1.0f, 1.0f }
+
 //==============================> Enumeraciones
 
 typedef enum Direccion
@@ -17,6 +24,7 @@ typedef struct Pelota
 {
     Vector2 posicion;
     Vector2 velocidad;
+    Vector2 aceleracion;
     float radio;
     Color color;
 } Pelota;
@@ -49,13 +57,14 @@ typedef struct Obstaculo
     Color color_principal;
     Color color_contorno;
     float grosor;
+    float modulo;
 } Obstaculo;
 
 //==============================> Prototipos de funciones
 
 //===============> General
 
-float CalcularMovimiento(float velocidad);
+float CalcularMovimiento(float velocidad, float aceleracion);
 
 //===============> Paleta
 
