@@ -91,6 +91,8 @@ int main()
     InitAudioDevice();
     SetMasterVolume(0.3f);
     Sound colisionWav = LoadSound("colision.wav");
+    Sound explosionWav = LoadSound("explosion.wav");
+    Sound seleccionWav = LoadSound("seleccion.wav");
 
     //===============> Configuración de raylib
 
@@ -120,6 +122,9 @@ int main()
 
     RenderTexture2D juegoRenderTextura = LoadRenderTexture(juegoAncho, juegoAlto);
     SetTextureFilter(juegoRenderTextura.texture, (TextureFilter)TEXTURE_FILTER_BILINEAR);
+
+    bool vaIniciarJuego = false;
+    bool vaRegresarMenuPrincipal = false;
 
     //==========> Menú principal
 
@@ -173,12 +178,14 @@ int main()
     //=====> Variables genéricas
 
     Byte nivelActual = 1;
+    short vidasJugador = 3;
     unsigned int puntosJugador = 0;
     bool pausaJuego = false;
     bool haEmpezadoJuego = false;
     char puntosTexto[10] = {0};
     char nivelTexto[10] = {0};
     bool acabaDePausar = false;
+    bool vaResetearJuego = false;
 
     //=====> Botones
 
@@ -193,18 +200,29 @@ int main()
     //=====> Pelota
 
     Pelota pelotaJuego = (Pelota){VECTOR2_CERO, VECTOR2_CERO, VECTOR2_UNO, 20.0f, (Color){0xC8, 0xC8, 0xC8, 0xFF}};
-    pelotaJuego.posicion.x = (float)GetRandomValue(0, juegoAncho - 20.0f);
-    pelotaJuego.posicion.y = 275.0f;
 
     //=====> Paletas
 
-    Paleta jugadorPaleta = (Paleta){(Vector2){mitadJuegoAncho, juegoAlto - 140.0f}, (Vector2){300.0f, 20.0f}, 600.0f, 4, 2.0f, (Color){186, 0xFF, 0xFF, 0xFF}};
+    Paleta jugadorPaleta = (Paleta){(Vector2){mitadJuegoAncho, juegoAlto - 140.0f}, (Vector2){20.0f, 20.0f}, 0.0f, 4, 2.0f, (Color){186, 0xFF, 0xFF, 0xFF}};
 
     //=====> Ladrillos
 
-    const Color ladrillosColoresJuego[3] = {COLOR_PIGMENT_GREEN, COLOR_CERULEAN, COLOR_PALATINATE_BLUE};
+    Byte ladrillosFilas = 0;
+    Byte ladrillosColumnas = 0;
+    Byte ladrillosFilasNiveles[5] = {3, 4, 5, 6, 7};
+    Byte ladrillosColumnasNiveles[5] = {5, 5, 6, 10, 15};
+    Ladrillo ladrillosNivel1[ladrillosFilasNiveles[0]][ladrillosColumnasNiveles[0]];
+    Ladrillo ladrillosNivel2[ladrillosFilasNiveles[1]][ladrillosColumnasNiveles[1]];
+    Ladrillo ladrillosNivel3[ladrillosFilasNiveles[2]][ladrillosColumnasNiveles[2]];
+    Ladrillo ladrillosNivel4[ladrillosFilasNiveles[3]][ladrillosColumnasNiveles[3]];
+    Ladrillo ladrillosNivel5[ladrillosFilasNiveles[4]][ladrillosColumnasNiveles[4]];
+    Ladrillo *ladrillosNivelActual = (Ladrillo *)ladrillosNivel1;
+    short ladrillosRestantes = -1;
 
-    Ladrillo ladrillosJuego[3][5];
+    //=====> Texturas
+
+    Texture corazonTextura = LoadTexture("heart.png");
+    SetTextureFilter(corazonTextura, (TextureFilter)TEXTURE_FILTER_POINT);
 
     //===============> Ciclo principal
 
@@ -252,26 +270,6 @@ int main()
             ActualizarPelota(&pelotaMenuPrincipal);
             ActualizarCPUPaleta(&cpuPaletaMenuPrincipal, pelotaMenuPrincipal.posicion);
             ActualizarCPUPaleta(&jugadorPaletaMenuPrincipal, pelotaMenuPrincipal.posicion);
-
-            //! TECLAS DE DEPURACIÓN
-            /*
-            if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN))
-            {
-                CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)VERTICAL);
-            }
-            else if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT))
-            {
-                CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)HORIZONTAL);
-            }
-            else if (IsKeyPressed(KEY_MINUS))
-            {
-                pelotaMenuPrincipal.velocidad = Vector2Scale(pelotaMenuPrincipal.velocidad, 0.5f);
-            }
-            else if (IsKeyPressed(KEY_EQUAL))
-            {
-                pelotaMenuPrincipal.velocidad = Vector2Scale(pelotaMenuPrincipal.velocidad, 2.0f);
-            }
-            */
         }
         else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
@@ -341,11 +339,24 @@ int main()
                     obstaculoMenuPrincipal[i].modulo = MAX(0.0f, obstaculoMenuPrincipal[i].modulo - 2.0f * GetFrameTime());
                 }
             }
+
+            if (pelotaMenuPrincipal.posicion.x - pelotaMenuPrincipal.radio <= 0.0f || pelotaMenuPrincipal.posicion.x + pelotaMenuPrincipal.radio >= juegoAncho)
+            {
+                CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)HORIZONTAL);
+                MoverPelota(&pelotaMenuPrincipal, (Direccion)HORIZONTAL);
+            }
+            if (pelotaMenuPrincipal.posicion.y - pelotaMenuPrincipal.radio <= 0.0f || pelotaMenuPrincipal.posicion.y + pelotaMenuPrincipal.radio >= juegoAlto)
+            {
+                CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)VERTICAL);
+                MoverPelota(&pelotaMenuPrincipal, (Direccion)VERTICAL);
+            }
         }
         else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
+            Vector2 pelotaJuegoVirtualPosicion = {pelotaJuego.posicion.x + CalcularMovimiento(pelotaJuego.velocidad.x, pelotaJuego.aceleracion.x), pelotaJuego.posicion.y + CalcularMovimiento(pelotaJuego.velocidad.y, pelotaJuego.aceleracion.y)};
+
             // Colisión de la pelota con la paleta del jugador
-            if (CheckCollisionCircleRec(pelotaJuego.posicion, pelotaJuego.radio, ObtenerRectanguloPaleta(&jugadorPaleta)))
+            if (CheckCollisionCircleRec(pelotaJuegoVirtualPosicion, pelotaJuego.radio, ObtenerRectanguloPaleta(&jugadorPaleta)))
             {
                 CambiarDireccionColisionRectPelota(&pelotaJuego, ObtenerRectanguloPaleta(&jugadorPaleta));
                 PlaySound(colisionWav);
@@ -361,21 +372,47 @@ int main()
             }
 
             // Colisiones de la pelota con los ladrillos
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < ladrillosFilas; i++)
             {
-                for (int j = 0; j < 5; j++)
+                for (int j = 0; j < ladrillosColumnas; j++)
                 {
-                    if (ladrillosJuego[i][j].activo)
+                    if (ladrillosNivelActual[i * ladrillosColumnas + j].activo)
                     {
-                        if (CheckCollisionCircleRec(pelotaJuego.posicion, pelotaJuego.radio, ObtenerRectanguloLadrillo(&ladrillosJuego[i][j])))
+                        if (CheckCollisionCircleRec(pelotaJuegoVirtualPosicion, pelotaJuego.radio, ObtenerRectanguloLadrillo(&ladrillosNivelActual[i * ladrillosColumnas + j])))
                         {
-                            ladrillosJuego[i][j].activo = false;
-                            CambiarDireccionColisionRectPelota(&pelotaJuego, ObtenerRectanguloLadrillo(&ladrillosJuego[i][j]));
+                            ladrillosNivelActual[i * ladrillosColumnas + j].activo = false;
+                            CambiarDireccionColisionRectPelota(&pelotaJuego, ObtenerRectanguloLadrillo(&ladrillosNivelActual[i * ladrillosColumnas + j]));
                             PlaySound(colisionWav);
-                            puntosJugador += ladrillosJuego[i][j].puntos;
+                            puntosJugador += ladrillosNivelActual[i * ladrillosColumnas + j].puntos;
                             sprintf(puntosTexto, "%u", puntosJugador);
+                            ladrillosRestantes--;
                         }
                     }
+                }
+            }
+
+            if (pelotaJuego.posicion.x - pelotaJuego.radio <= 0.0f || pelotaJuego.posicion.x + pelotaJuego.radio >= juegoAncho)
+            {
+                CambiarDireccionPelota(&pelotaJuego, (Direccion)HORIZONTAL);
+                MoverPelota(&pelotaJuego, (Direccion)HORIZONTAL);
+            }
+            if (pelotaJuego.posicion.y - pelotaJuego.radio <= 0.0f)
+            {
+                CambiarDireccionPelota(&pelotaJuego, (Direccion)VERTICAL);
+                MoverPelota(&pelotaJuego, (Direccion)VERTICAL);
+            }
+            else if (pelotaJuego.posicion.y + pelotaJuego.radio >= juegoAlto)
+            {
+                PlaySound(explosionWav);
+                vidasJugador--;
+                haEmpezadoJuego = false;
+                if (vidasJugador > 0)
+                {
+                    vaResetearJuego = true;
+                }
+                else
+                {
+                    vaRegresarMenuPrincipal = true;
                 }
             }
         }
@@ -390,7 +427,6 @@ int main()
 
         if (escenaActual == (Escena)ESCENA_MENU_PRINCIPAL)
         {
-
             for (int i = 0; i < MENU_PRINCIPAL_LADRILLOS_FILAS; i++)
             {
                 for (int j = 0; j < MENU_PRINCIPAL_LADRILLOS_COLUMNAS; j++)
@@ -413,38 +449,35 @@ int main()
 
             DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 290, 160, WHITE);
 
+            DrawRectangle(botonJugarRect.x - 16.0f, botonJugarRect.y - 16.0f, botonSalirRect.width + 32.0f, botonSalirJuegoRect.y - botonSalirJuegoRect.height - botonJugarRect.y + 32.0f, (Color){0xFF, 0x12, 0x12, 0x7F});
+
             if (GuiButton(botonJugarRect, "Jugar") || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER))
             {
                 TraceLog(LOG_INFO, "JUGAR");
-                CambiarEscena(ESCENA_JUEGO);
-                GenerarLadrillos((Ladrillo *)ladrillosJuego, 3, 5, 16.0f, ladrillosColoresJuego, 48.0f);
-                GuiSetStyle((GuiControl)DEFAULT, (GuiDefaultProperty)TEXT_SIZE, 70);
-                nivelActual = 1;
-                puntosJugador = 0;
-                haEmpezadoJuego = false;
-                pausaJuego = false;
-                strcpy(puntosTexto, "0");
-                strcpy(nivelTexto, "Nivel 1");
+                PlaySound(seleccionWav);
+                vaIniciarJuego = true;
             }
             if (GuiButton(botonLeaderboardRect, "Leaderboard") || IsKeyPressed(KEY_L))
             {
                 TraceLog(LOG_INFO, "LEADERBOARD");
+                PlaySound(seleccionWav);
             }
             if (GuiButton(botonSalirRect, "Salir") || IsKeyPressed(KEY_ESCAPE))
             {
                 TraceLog(LOG_INFO, "SALIR");
+                PlaySound(seleccionWav);
                 break;
             }
         }
         else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < ladrillosFilas; i++)
             {
-                for (int j = 0; j < 5; j++)
+                for (int j = 0; j < ladrillosColumnas; j++)
                 {
-                    if (ladrillosJuego[i][j].activo)
+                    if (ladrillosNivelActual[i * ladrillosColumnas + j].activo)
                     {
-                        DibujarLadrillo(&ladrillosJuego[i][j]);
+                        DibujarLadrillo(&ladrillosNivelActual[i * ladrillosColumnas + j]);
                     }
                 }
             }
@@ -456,13 +489,15 @@ int main()
             {
                 if (GuiButton((Rectangle){mitadJuegoAncho - anchoBotonPausa / 2, mitadJuegoAlto - altoBotonPausa / 2, anchoBotonPausa, altoBotonPausa}, "Empezar") || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER))
                 {
-                    haEmpezadoJuego = true;
+                    PlaySound(seleccionWav);
                     pelotaJuego.velocidad.x = 350.0f + 50.0f * nivelActual;
                     pelotaJuego.velocidad.y = pelotaJuego.velocidad.x;
+                    pelotaJuego.aceleracion = VECTOR2_UNO;
                     if (rand() % 2 == 0)
                     {
                         CambiarDireccionPelota(&pelotaJuego, (Direccion)HORIZONTAL);
                     }
+                    haEmpezadoJuego = true;
                 }
             }
             else if (pausaJuego)
@@ -470,14 +505,21 @@ int main()
                 if (GuiButton(botonReanudarRect, "Reanudar") || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER))
                 {
                     TraceLog(LOG_INFO, "REANUDAR");
+                    PlaySound(seleccionWav);
                     pausaJuego = false;
                 }
                 if (GuiButton(botonSalirJuegoRect, "Salir") || IsKeyPressed(KEY_ESCAPE) && !acabaDePausar)
                 {
                     TraceLog(LOG_INFO, "SALIR");
-                    CambiarEscena(ESCENA_MENU_PRINCIPAL);
-                    GuiSetStyle((GuiControl)DEFAULT, (GuiDefaultProperty)TEXT_SIZE, 50);
+                    PlaySound(seleccionWav);
+                    vaRegresarMenuPrincipal = true;
                 }
+            }
+
+            // Corazones
+            for (short i = 0; i < vidasJugador; i++)
+            {
+                DrawTextureEx(corazonTextura, (Vector2){8.0f + 64.0f * i, 8.0f}, 0.0f, 6.0f, WHITE);
             }
 
             DrawText(puntosTexto, juegoAncho - MeasureText(puntosTexto, 48) - 10, 10, 48, RAYWHITE);
@@ -523,12 +565,85 @@ int main()
                 }
             }
         }
+
+        if (vaRegresarMenuPrincipal)
+        {
+            CambiarEscena(ESCENA_MENU_PRINCIPAL);
+            GuiSetStyle((GuiControl)DEFAULT, (GuiDefaultProperty)TEXT_SIZE, 50);
+            vaRegresarMenuPrincipal = false;
+        }
+        if (ladrillosRestantes == 0)
+        {
+            nivelActual++;
+            vidasJugador++;
+            sprintf(nivelTexto, "Nivel %u", nivelActual);
+            ladrillosFilas = ladrillosFilasNiveles[nivelActual - 1];
+            ladrillosColumnas = ladrillosColumnasNiveles[nivelActual - 1];
+            ladrillosRestantes = ladrillosFilas * ladrillosColumnas;
+            switch (nivelActual)
+            {
+            case 2:
+                ladrillosNivelActual = (Ladrillo *)ladrillosNivel2;
+                GenerarLadrillos((Ladrillo *)ladrillosNivel2, ladrillosFilasNiveles[1], ladrillosColumnasNiveles[1], 11.0f, (Color[4]){COLOR_APPLE_GREEN, COLOR_PIGMENT_GREEN, COLOR_CERULEAN, COLOR_PALATINATE_BLUE}, 56.0f);
+                break;
+            case 3:
+                ladrillosNivelActual = (Ladrillo *)ladrillosNivel3;
+                GenerarLadrillos((Ladrillo *)ladrillosNivel3, ladrillosFilasNiveles[2], ladrillosColumnasNiveles[2], 10.0f, (Color[5]){COLOR_COPPER, COLOR_APPLE_GREEN, COLOR_PIGMENT_GREEN, COLOR_CERULEAN, COLOR_PALATINATE_BLUE}, 64.0f);
+                break;
+            case 4:
+                ladrillosNivelActual = (Ladrillo *)ladrillosNivel4;
+                GenerarLadrillos((Ladrillo *)ladrillosNivel4, ladrillosFilasNiveles[3], ladrillosColumnasNiveles[3], 9.0f, (Color[6]){COLOR_COCOA_BROWN, COLOR_COPPER, COLOR_APPLE_GREEN, COLOR_PIGMENT_GREEN, COLOR_CERULEAN, COLOR_PALATINATE_BLUE}, 72.0f);
+                break;
+            case 5:
+                ladrillosNivelActual = (Ladrillo *)ladrillosNivel5;
+                GenerarLadrillos((Ladrillo *)ladrillosNivel5, ladrillosFilasNiveles[4], ladrillosColumnasNiveles[4], 8.0f, (Color[7]){COLOR_BITTERSWEET_SHIMMER, COLOR_COCOA_BROWN, COLOR_COPPER, COLOR_APPLE_GREEN, COLOR_PIGMENT_GREEN, COLOR_CERULEAN, COLOR_PALATINATE_BLUE}, 80.0f);
+                break;
+            }
+            jugadorPaleta.tamaño.x = 300.0f - 40.0f * (nivelActual - 1);
+            jugadorPaleta.velocidad = 600.0f + 60.0f * (nivelActual - 1);
+            vaResetearJuego = true;
+            haEmpezadoJuego = false;
+        }
+        if (vaIniciarJuego)
+        {
+            CambiarEscena(ESCENA_JUEGO);
+            GuiSetStyle((GuiControl)DEFAULT, (GuiDefaultProperty)TEXT_SIZE, 70);
+            ladrillosFilas = ladrillosFilasNiveles[0];
+            ladrillosColumnas = ladrillosColumnasNiveles[0];
+            jugadorPaleta.tamaño.x = 300.0f;
+            jugadorPaleta.velocidad = 600.0f;
+            nivelActual = 1;
+            puntosJugador = 0;
+            haEmpezadoJuego = false;
+            pausaJuego = false;
+#ifdef DEBUG
+            vidasJugador = 12;
+#else
+            vidasJugador = 3;
+#endif
+            strcpy(puntosTexto, "0");
+            strcpy(nivelTexto, "Nivel 1");
+            ladrillosRestantes = ladrillosFilas * ladrillosColumnas;
+            ladrillosNivelActual = (Ladrillo *)ladrillosNivel1;
+            GenerarLadrillos((Ladrillo *)ladrillosNivel1, ladrillosFilasNiveles[0], ladrillosColumnasNiveles[0], 12.0f, (Color[3]){COLOR_PIGMENT_GREEN, COLOR_CERULEAN, COLOR_PALATINATE_BLUE}, 48.0f);
+            vaResetearJuego = true;
+            vaIniciarJuego = false;
+        }
+        if (vaResetearJuego)
+        {
+            pelotaJuego.posicion.x = (float)GetRandomValue(0, juegoAncho - pelotaJuego.radio * 2);
+            pelotaJuego.posicion.y = 300.0f + nivelActual * 24.0f;
+            vaResetearJuego = false;
+        }
     }
 
     //===============> Cierre
 
     UnloadRenderTexture(juegoRenderTextura);
+    UnloadTexture(corazonTextura);
     UnloadSound(colisionWav);
+    UnloadSound(explosionWav);
+    UnloadSound(seleccionWav);
     CloseAudioDevice();
     CloseWindow();
     return 0;

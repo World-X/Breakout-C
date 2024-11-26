@@ -77,16 +77,6 @@ void ActualizarPelota(Pelota *pelota)
 {
     MoverPelota(pelota, (Direccion)HORIZONTAL);
     MoverPelota(pelota, (Direccion)VERTICAL);
-    if (pelota->posicion.x - pelota->radio <= 0.0f || pelota->posicion.x + pelota->radio >= juegoAncho)
-    {
-        CambiarDireccionPelota(pelota, (Direccion)HORIZONTAL);
-        MoverPelota(pelota, (Direccion)HORIZONTAL);
-    }
-    if (pelota->posicion.y - pelota->radio <= 0.0f || pelota->posicion.y + pelota->radio >= juegoAlto)
-    {
-        CambiarDireccionPelota(pelota, (Direccion)VERTICAL);
-        MoverPelota(pelota, (Direccion)VERTICAL);
-    }
 }
 
 void DibujarPelota(Pelota *pelota)
