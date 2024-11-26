@@ -93,6 +93,7 @@ int main()
     Sound colisionWav = LoadSound("colision.wav");
     Sound explosionWav = LoadSound("explosion.wav");
     Sound seleccionWav = LoadSound("seleccion.wav");
+    Sound poderWav = LoadSound("poder.wav");
 
     //===============> Configuración de raylib
 
@@ -186,6 +187,7 @@ int main()
     char nivelTexto[10] = {0};
     bool acabaDePausar = false;
     bool vaResetearJuego = false;
+    bool perdioJuego = false;
 
     //=====> Botones
 
@@ -273,8 +275,7 @@ int main()
         }
         else if (escenaActual == (Escena)ESCENA_JUEGO)
         {
-            //! TECLAS DE DEPURACIÓN
-            if (!pausaJuego)
+            if (!pausaJuego && !perdioJuego)
             {
                 if (haEmpezadoJuego)
                 {
@@ -401,18 +402,18 @@ int main()
                 CambiarDireccionPelota(&pelotaJuego, (Direccion)VERTICAL);
                 MoverPelota(&pelotaJuego, (Direccion)VERTICAL);
             }
-            else if (pelotaJuego.posicion.y + pelotaJuego.radio >= juegoAlto)
+            else if (pelotaJuego.posicion.y + pelotaJuego.radio >= juegoAlto && !perdioJuego)
             {
                 PlaySound(explosionWav);
                 vidasJugador--;
-                haEmpezadoJuego = false;
                 if (vidasJugador > 0)
                 {
+                    haEmpezadoJuego = false;
                     vaResetearJuego = true;
                 }
                 else
                 {
-                    vaRegresarMenuPrincipal = true;
+                    perdioJuego = true;
                 }
             }
         }
@@ -449,7 +450,7 @@ int main()
 
             DrawText(juegoTitulo, mitadJuegoAncho - MeasureText(juegoTitulo, 160) / 2, 290, 160, WHITE);
 
-            DrawRectangle(botonJugarRect.x - 16.0f, botonJugarRect.y - 16.0f, botonSalirRect.width + 32.0f, botonSalirJuegoRect.y - botonSalirJuegoRect.height - botonJugarRect.y + 32.0f, (Color){0xFF, 0x12, 0x12, 0x7F});
+            // DrawRectangle(botonJugarRect.x - 16.0f, botonJugarRect.y - 16.0f, botonSalirRect.width + 32.0f, botonSalirJuegoRect.y - botonSalirJuegoRect.height - botonJugarRect.y + 32.0f, (Color){0xFF, 0x12, 0x12, 0x7F});
 
             if (GuiButton(botonJugarRect, "Jugar") || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER))
             {
@@ -485,6 +486,15 @@ int main()
             DibujarPelota(&pelotaJuego);
             DibujarPaleta(&jugadorPaleta);
 
+            // Corazones
+            for (short i = 0; i < vidasJugador; i++)
+            {
+                DrawTextureEx(corazonTextura, (Vector2){8.0f + 64.0f * i, 8.0f}, 0.0f, 6.0f, WHITE);
+            }
+
+            DrawText(puntosTexto, juegoAncho - MeasureText(puntosTexto, 48) - 10, 10, 48, RAYWHITE);
+            DrawText(nivelTexto, mitadJuegoAncho - MeasureText(nivelTexto, 64) / 2, juegoAlto - 84, 64, RAYWHITE);
+
             if (!haEmpezadoJuego)
             {
                 if (GuiButton((Rectangle){mitadJuegoAncho - anchoBotonPausa / 2, mitadJuegoAlto - altoBotonPausa / 2, anchoBotonPausa, altoBotonPausa}, "Empezar") || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER))
@@ -492,6 +502,7 @@ int main()
                     PlaySound(seleccionWav);
                     pelotaJuego.velocidad.x = 350.0f + 50.0f * nivelActual;
                     pelotaJuego.velocidad.y = pelotaJuego.velocidad.x;
+
                     pelotaJuego.aceleracion = VECTOR2_UNO;
                     if (rand() % 2 == 0)
                     {
@@ -502,6 +513,7 @@ int main()
             }
             else if (pausaJuego)
             {
+                DrawRectangle(0, 0, juegoAncho, juegoAlto, (Color){0x00, 0x00, 0x00, 0x7F});
                 if (GuiButton(botonReanudarRect, "Reanudar") || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER))
                 {
                     TraceLog(LOG_INFO, "REANUDAR");
@@ -515,15 +527,24 @@ int main()
                     vaRegresarMenuPrincipal = true;
                 }
             }
-
-            // Corazones
-            for (short i = 0; i < vidasJugador; i++)
+            else if (perdioJuego)
             {
-                DrawTextureEx(corazonTextura, (Vector2){8.0f + 64.0f * i, 8.0f}, 0.0f, 6.0f, WHITE);
+                DrawRectangle(0, 0, juegoAncho, juegoAlto, (Color){0x00, 0x00, 0x00, 0x7F});
+                DrawText("GAME OVER", mitadJuegoAncho - MeasureText("GAME OVER", 160) / 2, mitadJuegoAlto - 200, 160, WHITE);
+                if (GuiButton(botonLeaderboardRect, "Reiniciar") || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER))
+                {
+                    PlaySound(seleccionWav);
+                    vaIniciarJuego = true;
+                    perdioJuego = false;
+                }
+                if (GuiButton(botonSalirRect, "Salir") || IsKeyPressed(KEY_ESCAPE) && !acabaDePausar)
+                {
+                    TraceLog(LOG_INFO, "SALIR");
+                    PlaySound(seleccionWav);
+                    vaRegresarMenuPrincipal = true;
+                    perdioJuego = false;
+                }
             }
-
-            DrawText(puntosTexto, juegoAncho - MeasureText(puntosTexto, 48) - 10, 10, 48, RAYWHITE);
-            DrawText(nivelTexto, mitadJuegoAncho - MeasureText(nivelTexto, 64) / 2, juegoAlto - 84, 64, RAYWHITE);
         }
 
         EndTextureMode();
@@ -552,7 +573,7 @@ int main()
 
         if (escenaActual == (Escena)ESCENA_JUEGO)
         {
-            if (haEmpezadoJuego)
+            if (haEmpezadoJuego && !perdioJuego)
             {
                 if (!pausaJuego && IsKeyPressed(KEY_ESCAPE))
                 {
@@ -576,6 +597,7 @@ int main()
         {
             nivelActual++;
             vidasJugador++;
+            PlaySound(poderWav);
             sprintf(nivelTexto, "Nivel %u", nivelActual);
             ladrillosFilas = ladrillosFilasNiveles[nivelActual - 1];
             ladrillosColumnas = ladrillosColumnasNiveles[nivelActual - 1];
@@ -644,6 +666,7 @@ int main()
     UnloadSound(colisionWav);
     UnloadSound(explosionWav);
     UnloadSound(seleccionWav);
+    UnloadSound(poderWav);
     CloseAudioDevice();
     CloseWindow();
     return 0;
