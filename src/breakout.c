@@ -1,6 +1,7 @@
 //==============================> Librerías
 
 #include "raylib.h"
+#include "raymath.h"
 #include "breakout.h"
 
 //==============================> Macros
@@ -152,6 +153,16 @@ Rectangle ObtenerRectanguloLadrillo(Ladrillo *ladrillo)
 }
 
 //===============> Obstaculo
+
+void MoverObstaculo(Obstaculo *obstaculo, Vector2 inicio, Vector2 fin, float interpolacion)
+{
+    obstaculo->posicion = Vector2Lerp(inicio, fin, interpolacion);
+}
+
+void ActualizarObstaculo(Obstaculo *obstaculo)
+{
+    obstaculo->modulo = MAX(0.0f, obstaculo->modulo - 2.0f * GetFrameTime());
+}
 
 void DibujarObstaculo(Obstaculo *obstaculo)
 {

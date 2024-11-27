@@ -92,6 +92,8 @@ Rectangle ObtenerRectanguloLadrillo(Ladrillo *ladrillo);
 
 //===============> Obstaculo
 
+void MoverObstaculo(Obstaculo *obstaculo, Vector2 inicio, Vector2 fin, float interpolacion);
+void ActualizarObstaculo(Obstaculo *obstaculo);
 void DibujarObstaculo(Obstaculo *obstaculo);
 Rectangle ObtenerRectanguloObstaculo(Obstaculo *obstaculo);
 
