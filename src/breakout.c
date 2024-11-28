@@ -41,7 +41,7 @@ void CambiarDireccionPelota(Pelota *pelota, Direccion direccion)
 
 void CambiarDireccionColisionRectPelota(Pelota *pelota, Rectangle rectangulo)
 {
-    Vector2 pelotaVirtualPosicion = {pelota->posicion.x + pelota->velocidad.x * GetFrameTime(), pelota->posicion.y + pelota->velocidad.y * GetFrameTime()};
+    Vector2 pelotaVirtualPosicion = {pelota->posicion.x + CalcularMovimiento(pelota->velocidad.x, pelota->aceleracion.x), pelota->posicion.y + CalcularMovimiento(pelota->velocidad.y, pelota->aceleracion.y)};
     bool veniaDesdeArriba = pelota->posicion.y < rectangulo.y;
     bool veniaDesdeAbajo = pelota->posicion.y > rectangulo.y + rectangulo.height;
     bool veniaDesdeIzquierda = pelota->posicion.x < rectangulo.x;
@@ -53,12 +53,42 @@ void CambiarDireccionColisionRectPelota(Pelota *pelota, Rectangle rectangulo)
     if (veniaDesdeArriba && entroPorArriba || veniaDesdeAbajo && entroPorAbajo)
     {
         CambiarDireccionPelota(pelota, (Direccion)VERTICAL);
-        MoverPelota(pelota, (Direccion)VERTICAL);
+        if (CheckCollisionCircleRec(pelota->posicion, pelota->radio, rectangulo))
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (CheckCollisionCircleRec(pelota->posicion, pelota->radio, (Rectangle){rectangulo.x, rectangulo.y + i, rectangulo.width, 1}))
+                {
+                    pelota->posicion.y = rectangulo.y + i - pelota->radio;
+                    break;
+                }
+                if (CheckCollisionCircleRec(pelota->posicion, pelota->radio, (Rectangle){rectangulo.x, rectangulo.y + rectangulo.height - i, rectangulo.width, 1}))
+                {
+                    pelota->posicion.y = rectangulo.y + rectangulo.height - i + pelota->radio;
+                    break;
+                }
+            }
+        }
     }
     if (veniaDesdeIzquierda && entroPorLaIzquierda || veniaDesdeDerecha && entroPorLaDerecha)
     {
         CambiarDireccionPelota(pelota, (Direccion)HORIZONTAL);
-        MoverPelota(pelota, (Direccion)HORIZONTAL);
+        if (CheckCollisionCircleRec(pelota->posicion, pelota->radio, rectangulo))
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (CheckCollisionCircleRec(pelota->posicion, pelota->radio, (Rectangle){rectangulo.x + i, rectangulo.y, 1, rectangulo.height}))
+                {
+                    pelota->posicion.x = rectangulo.x + i - pelota->radio;
+                    break;
+                }
+                if (CheckCollisionCircleRec(pelota->posicion, pelota->radio, (Rectangle){rectangulo.x + rectangulo.width - i, rectangulo.y, 1, rectangulo.height}))
+                {
+                    pelota->posicion.x = rectangulo.x + rectangulo.width - i + pelota->radio;
+                    break;
+                }
+            }
+        }
     }
 }
 

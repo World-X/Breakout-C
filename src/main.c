@@ -100,6 +100,7 @@ int main()
     Sound explosionWav = LoadSound("explosion.wav");
     Sound seleccionWav = LoadSound("seleccion.wav");
     Sound poderWav = LoadSound("poder.wav");
+    float volumenOffset = 0.0f;
 
     //===============> Configuración de raylib
 
@@ -352,6 +353,18 @@ int main()
         }
 #endif
 
+        if (IsKeyPressed(KEY_EQUAL))
+        {
+            SetMasterVolume(MIN(GetMasterVolume() + 0.1f, 1.0f));
+            volumenOffset = 100.0f;
+        }
+        else if (IsKeyPressed(KEY_MINUS))
+        {
+            SetMasterVolume(MAX(GetMasterVolume() - 0.1f, 0.0f));
+            volumenOffset = 100.0f;
+        }
+        volumenOffset = MAX(0.0f, volumenOffset - GetFrameTime() * 75.0f);
+
         if (escenaActual == (Escena)ESCENA_MENU_PRINCIPAL)
         {
             ActualizarPelota(&pelotaMenuPrincipal);
@@ -419,7 +432,7 @@ int main()
             {
                 modoAutomatico = !modoAutomatico;
             }
-            if (IsKeyPressed(KEY_EQUAL))
+            if (IsKeyPressed(KEY_KP_SUBTRACT))
             {
                 ladrillosRestantes = 0;
             }
@@ -525,10 +538,14 @@ int main()
                 CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)HORIZONTAL);
                 MoverPelota(&pelotaMenuPrincipal, (Direccion)HORIZONTAL);
             }
-            if (pelotaMenuPrincipal.posicion.y - pelotaMenuPrincipal.radio <= 0.0f || pelotaMenuPrincipal.posicion.y + pelotaMenuPrincipal.radio >= juegoAlto)
+            if (pelotaMenuPrincipal.posicion.y - pelotaMenuPrincipal.radio <= 0.0f)
             {
                 CambiarDireccionPelota(&pelotaMenuPrincipal, (Direccion)VERTICAL);
                 MoverPelota(&pelotaMenuPrincipal, (Direccion)VERTICAL);
+            }
+            else if (pelotaMenuPrincipal.posicion.y + pelotaMenuPrincipal.radio >= juegoAlto)
+            {
+                pelotaMenuPrincipal.posicion = (Vector2){(float)GetRandomValue(0, juegoAncho - 20.0f), 275.0f};
             }
         }
         else if (escenaActual == (Escena)ESCENA_JUEGO)
@@ -935,6 +952,7 @@ int main()
             }
         }
 #endif
+        DrawText(TextFormat("Volumen: %d%%", (int)(GetMasterVolume() * 100.0f)), ventanaAncho - 225, ventanaAlto - MIN(volumenOffset, 60.0f) + 20.0f, 30, WHITE);
         EndDrawing();
 
         //===============> Lógica después de dibujar
